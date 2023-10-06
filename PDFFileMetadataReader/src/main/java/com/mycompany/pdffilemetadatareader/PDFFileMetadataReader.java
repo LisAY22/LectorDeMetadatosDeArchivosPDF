@@ -27,6 +27,7 @@ public class PDFFileMetadataReader {
         imageLabel.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
 
         // Panel para el botón
+        JPanel buttonPanel = new JPanel();
         buttonPanel.setOpaque(false); // Hacemos el panel transparente
         buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT)); // Alineamos el botón a la derecha
         JButton continueButton = new JButton("Continuar →"); // Agregamos la flecha a la derecha
