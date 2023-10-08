@@ -5,6 +5,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentInformation;
+import org.apache.pdfbox.Loader;
 
 public class PDFFileMetadataReader {
 
@@ -22,7 +28,7 @@ public class PDFFileMetadataReader {
         frame.setResizable(false);
 
         // Panel para la imagen
-        ImageIcon imageIcon = new ImageIcon("C:\\Users\\karol\\Documentos\\GitHub\\LectorDeMetadatosDeArchivosPDF\\PDF file metadata reader.png");
+        ImageIcon imageIcon = new ImageIcon("C:\\Users\\lisaj\\OneDrive\\Documentos\\GitHub\\LectorDeMetadatosDeArchivosPDF\\PDF file metadata reader.png");
         JLabel imageLabel = new JLabel(imageIcon);
         imageLabel.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
 
@@ -102,18 +108,118 @@ public class PDFFileMetadataReader {
         ingresarRutaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Botón 'Ingresar nueva ruta' presionado");
+                ingresarRuta();
             }
         });
         continuarMismaRutaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Botón 'Continuar con la misma ruta' presionado");
+                continuarMismaRuta();
             }
         });
 
         ventanaOpciones.getContentPane().add(buttonPanel);
         ventanaOpciones.setLocationRelativeTo(null);
         ventanaOpciones.setVisible(true);
+    }
+    
+    private static void ingresarRuta() {
+        // Mostrar un cuadro de diálogo para que el usuario seleccione una carpeta
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int result = fileChooser.showOpenDialog(null);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFolder = fileChooser.getSelectedFile();
+            List<PDFFileInfo> pdfFiles = buscarArchivosPDF(selectedFolder);
+            // Guardar la información en un archivo
+            guardarInformacionEnArchivo(pdfFiles);
+            JOptionPane.showMessageDialog(null, "Búsqueda completada y datos guardados.");
+        }
+    }
+    
+    private static List<PDFFileInfo> buscarArchivosPDF(File folder) {
+    List<PDFFileInfo> pdfFiles = new ArrayList<>();
+    buscarArchivosPDFRecursivamente(folder, pdfFiles);
+    return pdfFiles;
+    }
+
+    private static void buscarArchivosPDFRecursivamente(File folder, List<PDFFileInfo> pdfFiles) {
+        if (folder.isDirectory()) {
+            File[] files = folder.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        buscarArchivosPDFRecursivamente(file, pdfFiles);
+                    } else if (file.isFile() && file.getName().toLowerCase().endsWith(".pdf")) {
+                        PDFFileInfo fileInfo = obtenerInformacionPDF(file);
+                        if (fileInfo != null) {
+                            pdfFiles.add(fileInfo);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static PDFFileInfo obtenerInformacionPDF(File pdfFile) {
+        try {
+            PDDocument document = Loader.loadPDF(pdfFile);
+            PDDocumentInformation info = document.getDocumentInformation();
+
+            String title = info.getTitle();
+            String subject = info.getSubject();
+            String keywords = info.getKeywords();
+            String fileType = "PDF"; // Tipo de archivo
+            float pdfVersion = document.getVersion();
+            String creator = info.getAuthor();
+            int pageCount = document.getNumberOfPages();
+
+            long fileSize = pdfFile.length();
+
+            document.close();
+
+            return new PDFFileInfo(pdfFile, fileSize, pageCount, title, subject, keywords, fileType, pdfVersion, creator);
+            }   
+        catch (IOException e) {
+            e.printStackTrace();
+            return null;
+            }
+    }
+
+    private static void guardarInformacionEnArchivo(List<PDFFileInfo> pdfFiles) {
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("pdfInfo.dat"))) {
+            outputStream.writeObject(pdfFiles);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void continuarMismaRuta() {
+    // Cargar la información desde el archivo
+    List<PDFFileInfo> pdfFiles = cargarInformacionDesdeArchivo();
+
+    // Construir una cadena de texto con la información de los archivos PDF
+    StringBuilder infoText = new StringBuilder();
+    for (PDFFileInfo fileInfo : pdfFiles) {
+        infoText.append("Nombre: ").append(fileInfo.getTitle()).append(", ");
+        infoText.append("Tamaño: ").append(fileInfo.getFileSize()).append(" bytes, ");
+        infoText.append("Páginas: ").append(fileInfo.getPageCount()).append(", ");
+
+        infoText.append("\n"); // Agrega un salto de línea entre cada archivo
+    }
+
+    // Muestra la cadena de texto en un cuadro de diálogo
+    JOptionPane.showMessageDialog(null, "Información cargada desde el archivo:\n" + infoText.toString());
+    }
+
+    
+    private static List<PDFFileInfo> cargarInformacionDesdeArchivo() {
+        List<PDFFileInfo> pdfFiles = new ArrayList<>();
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("pdfInfo.dat"))) {
+            pdfFiles = (List<PDFFileInfo>) inputStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return pdfFiles;
     }
 }

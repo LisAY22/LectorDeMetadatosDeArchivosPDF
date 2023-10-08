@@ -11,6 +11,11 @@
             <artifactId>FF-library</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>pdfbox.library</groupId>
+            <artifactId>pdfbox-library</artifactId>
+            <version>3.0.0</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
