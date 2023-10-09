@@ -162,28 +162,32 @@ public class PDFFileMetadataReader {
     }
 
     private static PDFFileInfo obtenerInformacionPDF(File pdfFile) {
-        try {
-            PDDocument document = Loader.loadPDF(pdfFile);
-            PDDocumentInformation info = document.getDocumentInformation();
+    try {
+        PDDocument document = Loader.loadPDF(pdfFile);
+        PDDocumentInformation info = document.getDocumentInformation();
+        
+        String name = pdfFile.getName();
+        String title = info.getTitle();
+        String subject = info.getSubject();
+        String keywords = info.getKeywords();
+        String fileType = "PDF"; // Tipo de archivo
+        float pdfVersion = document.getVersion();
+        String creator = info.getAuthor();
+        int pageCount = document.getNumberOfPages();
+        long fileSize = pdfFile.length();
 
-            String title = info.getTitle();
-            String subject = info.getSubject();
-            String keywords = info.getKeywords();
-            String fileType = "PDF"; // Tipo de archivo
-            float pdfVersion = document.getVersion();
-            String creator = info.getAuthor();
-            int pageCount = document.getNumberOfPages();
+        document.close();
 
-            long fileSize = pdfFile.length();
+        // Crear una lista vacía de imágenes y fuentes
+        List<String> images = new ArrayList<>();
+        List<String> sources = new ArrayList<>();
 
-            document.close();
-
-            return new PDFFileInfo(pdfFile, fileSize, pageCount, title, subject, keywords, fileType, pdfVersion, creator);
-            }   
-        catch (IOException e) {
-            e.printStackTrace();
-            return null;
-            }
+        // Crea una instancia de PDFFileInfo con la información recopilada
+        return new PDFFileInfo(pdfFile, name, fileSize, 0, pageCount, title, subject, keywords, fileType, pdfVersion, creator, images, sources);
+    } catch (IOException e) {
+        e.printStackTrace();
+        return null;
+        }
     }
 
     private static void guardarInformacionEnArchivo(List<PDFFileInfo> pdfFiles) {
@@ -201,9 +205,18 @@ public class PDFFileMetadataReader {
     // Construir una cadena de texto con la información de los archivos PDF
     StringBuilder infoText = new StringBuilder();
     for (PDFFileInfo fileInfo : pdfFiles) {
-        infoText.append("Nombre: ").append(fileInfo.getTitle()).append(", ");
-        infoText.append("Tamaño: ").append(fileInfo.getFileSize()).append(" bytes, ");
+        infoText.append("Nombre: ").append(fileInfo.getName()).append(", ");
+        infoText.append("Tamaño de Archivo: ").append(fileInfo.getFileSize()).append(" bytes, ");
+        infoText.append("Tamaño de Página: ").append(fileInfo.getPageSize()).append(", ");
         infoText.append("Páginas: ").append(fileInfo.getPageCount()).append(", ");
+        infoText.append("Titulo: ").append(fileInfo.getTitle()).append(", ");
+        infoText.append("Asunto: ").append(fileInfo.getSubject()).append(", ");
+        infoText.append("Palabras Clave: ").append(fileInfo.getKeywords()).append(", ");
+        infoText.append("Tipo de Archivo: ").append(fileInfo.getFileType()).append(", ");
+        infoText.append("Versión de PDF ").append(fileInfo.getPdfVersion()).append(", ");
+        infoText.append("Aplicación por la que fue creada: ").append(fileInfo.getCreator()).append(", ");
+        infoText.append("Lista de Imágenes en el Documento: ").append(fileInfo.getImages()).append(", ");
+        infoText.append("Lista de Fuentes en el Documento: ").append(fileInfo.getSources()).append(", ");
 
         infoText.append("\n"); // Agrega un salto de línea entre cada archivo
     }
