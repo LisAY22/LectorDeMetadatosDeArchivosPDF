@@ -2,12 +2,14 @@ package com.mycompany.pdffilemetadatareader;
 import java.io.File;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 public class PDFFileInfo implements Serializable {
     private File file;
     private String name;
+    private String author;
     private long fileSize;
-    private long pageSize;
+    private String pageSize;
     private int pageCount;
     private String title;
     private String subject;
@@ -16,13 +18,14 @@ public class PDFFileInfo implements Serializable {
     private float pdfVersion;
     private String creator;
     private List<String> images;
-    private List<String> sources;
+    private Set<String> fonts;
 
     // Constructor
-    public PDFFileInfo(File file, String name, long fileSize, long pageSize, int pageCount, String title, String subject,
-                       String keywords, String fileType, float pdfVersion, String creator, List<String> images, List<String> sources) {
+    public PDFFileInfo(File file, String name, String author, long fileSize, String pageSize, int pageCount, String title, String subject,
+                       String keywords, String fileType, float pdfVersion, String creator, List<String> images, Set<String> fonts) {
         this.file = file;
         this.name = name;
+        this.author = author;
         this.fileSize = fileSize;
         this.pageSize = pageSize;
         this.pageCount = pageCount;
@@ -33,7 +36,7 @@ public class PDFFileInfo implements Serializable {
         this.pdfVersion = pdfVersion;
         this.creator = creator;
         this.images = images;
-        this.sources = sources;
+        this.fonts = fonts;
     }
 
     // Métodos getter y setter para acceder a los atributos
@@ -53,6 +56,14 @@ public class PDFFileInfo implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
+    
+    public String getAuthor() {
+        return author;
+    }
+    
+    public void setAuthor(String author) {
+        this.author = author;
+    }
 
     public long getFileSize() {
         return fileSize;
@@ -62,11 +73,11 @@ public class PDFFileInfo implements Serializable {
         this.fileSize = fileSize;
     }
     
-    public long getPageSize() {
+    public String getPageSize() {
         return pageSize;
     }
     
-    public void setPagesSize(long pageSize) {
+    public void setPagesSize(String pageSize) {
         this.pageSize = pageSize;
     }
 
@@ -134,12 +145,13 @@ public class PDFFileInfo implements Serializable {
         this.images = images;
     }
     
-    public List<String> getSources() {
-        return sources;
+    public Set<String> getFonts() {
+        return fonts;
     }
     
-    public void setSources(List<String> sources) {
-        this.sources = sources;
+    public void setFonts(Set<String> fonts) {
+        this.fonts = fonts;
     }
 
 }
+

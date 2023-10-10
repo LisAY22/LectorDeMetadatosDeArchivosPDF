@@ -1,17 +1,30 @@
 package com.mycompany.pdffilemetadatareader;
 import com.formdev.flatlaf.FlatDarkLaf;
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.util.ArrayList;
 import java.io.FileOutputStream;
+import org.apache.pdfbox.pdmodel.PDDocumentInformation;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import java.text.DecimalFormat;
+import java.util.Objects;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 
 public class PDFFileMetadataReader {
     
@@ -177,27 +190,94 @@ public class PDFFileMetadataReader {
         PDDocumentInformation info = document.getDocumentInformation();
         
         String name = pdfFile.getName();
+        String author = info.getAuthor();
         String title = info.getTitle();
         String subject = info.getSubject();
         String keywords = info.getKeywords();
-        String fileType = "PDF"; // Tipo de archivo
+        String fileType = "PDF"; 
         float pdfVersion = document.getVersion();
-        String creator = info.getAuthor();
+        String creator = info.getCreator();
         int pageCount = document.getNumberOfPages();
         long fileSize = pdfFile.length();
+        List<String> images = obtenerImagenesDesdePDF(document);
+        Set<String> fonts = extractFontsFromPDF(pdfFile.getAbsolutePath());
+        String pageSize = getPageSize(document);
 
         document.close();
 
-        // Crear una lista vacía de imágenes y fuentes
-        List<String> images = new ArrayList<>();
-        List<String> sources = new ArrayList<>();
-
         // Crea una instancia de PDFFileInfo con la información recopilada
-        return new PDFFileInfo(pdfFile, name, fileSize, 0, pageCount, title, subject, keywords, fileType, pdfVersion, creator, images, sources);
+        return new PDFFileInfo(pdfFile, name, author, fileSize, pageSize, pageCount, title, subject, keywords, fileType, pdfVersion, creator, images, fonts);
     } catch (IOException e) {
         e.printStackTrace();
         return null;
         }
+    }
+    
+    private static List<String> obtenerImagenesDesdePDF(PDDocument document) {
+    List<String> images = new ArrayList<>();
+    try {
+        for (int pageNumber = 0; pageNumber < document.getNumberOfPages(); pageNumber++) {
+            PDPage page = document.getPage(pageNumber);
+            PDResources resources = page.getResources();
+            Iterable<COSName> xObjectNames = resources.getXObjectNames();
+
+            for (COSName xObjectName : xObjectNames) {
+                if (resources.isImageXObject(xObjectName)) {
+                    PDImageXObject imageXObject = (PDImageXObject) resources.getXObject(xObjectName);
+                    // Aquí puedes procesar la imagen, por ejemplo, guardarla o realizar otras operaciones
+                    // Puedes obtener información adicional sobre la imagen, como su formato, ancho, alto, etc.
+                    // PDImageXObject tiene métodos como getSuffix(), getWidth(), getHeight(), etc.
+                    // Agrega el camino de la imagen a la lista
+                    images.add(imageXObject.getCOSObject().toString());
+                }
+            }
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+    return images;
+    }
+    
+    private static Set<String> extractFontsFromPDF(String pdfFilePath) throws IOException {
+    Set<String> fonts = new HashSet<>();
+    PDDocument document = Loader.loadPDF(new File(pdfFilePath));
+    
+    for (PDPage page : document.getPages()) {
+        PDResources resources = page.getResources();
+        for (COSName fontName : resources.getFontNames()) {
+            PDFont font = resources.getFont(fontName);
+            if (font instanceof PDType0Font) {
+                PDType0Font type0Font = (PDType0Font) font;
+                fonts.add(type0Font.getName());
+            } else if (font instanceof PDType1Font) {
+                PDType1Font type1Font = (PDType1Font) font;
+                fonts.add(type1Font.getName());
+            }
+        }
+    }
+    document.close();
+    return fonts;
+    }
+
+    private static String getPageSize(PDDocument file) {
+    DecimalFormat df = new DecimalFormat("###.#");
+    PDPage page = file.getPage(0);
+
+    String pageSize;
+
+    PDRectangle mediaBox = page.getMediaBox();
+
+    double width = mediaBox.getWidth() / 72;
+    double height = mediaBox.getHeight() / 72;
+
+    if (((Objects.equals(df.format(width), "8.5")) || ((Objects.equals(df.format(height), "11.0"))))) {
+        pageSize = "Carta";
+    } else if (((Objects.equals(df.format(width), "8.3")) || ((Objects.equals(df.format(height), "11.8"))))) {
+        pageSize = "Oficio";
+    } else {
+        pageSize = df.format(width) + " x " + df.format(height);
+    }
+    return pageSize;
     }
 
     private static void guardarInformacionEnArchivo(List<PDFFileInfo> pdfFiles) {
@@ -215,26 +295,27 @@ public class PDFFileMetadataReader {
     private static void guardarInformacionEnCSV(List<PDFFileInfo> pdfFiles) {
         try (FileWriter writer = new FileWriter(csvFileName)) {
             // Escribir el encabezado CSV
-            writer.write("Nombre,Tamaño de Archivo (bytes),Tamaño de Página,Páginas,Título,Asunto,Palabras Clave,Tipo de Archivo,Versión de PDF,Aplicación por la que fue creada,Lista de Imágenes en el Documento,Lista de Fuentes en el Documento\n");
+            writer.write("Nombre,Autor,Tamaño de Archivo (bytes),Tamaño de Página,Páginas,Título,Asunto,Palabras Clave,Tipo de Archivo,Versión de PDF,Aplicación por la que fue creada,Lista de Imágenes en el Documento,Lista de Fuentes en el Documento\n");
 
             // Llenar el archivo CSV con los datos de los archivos PDF
             for (PDFFileInfo fileInfo : pdfFiles) {
                 StringBuilder line = new StringBuilder();
-                line.append("\"").append(fileInfo.getName()).append("\",");
+                line.append(fileInfo.getName()).append(",");
+                line.append(fileInfo.getAuthor()).append(",");
                 line.append(fileInfo.getFileSize()).append(",");
                 line.append(fileInfo.getPageSize()).append(",");
                 line.append(fileInfo.getPageCount()).append(",");
-                line.append("\"").append(fileInfo.getTitle()).append("\",");
-                line.append("\"").append(fileInfo.getSubject()).append("\",");
-                line.append("\"").append(fileInfo.getKeywords()).append("\",");
-                line.append("\"").append(fileInfo.getFileType()).append("\",");
-                line.append("\"").append(fileInfo.getPdfVersion()).append("\",");
-                line.append("\"").append(fileInfo.getCreator()).append("\",");
-                // Puedes agregar la información de imágenes y fuentes de manera similar si lo deseas
+                line.append(fileInfo.getTitle()).append(",");
+                line.append(fileInfo.getSubject()).append(",");
+                line.append(fileInfo.getKeywords()).append(",");
+                line.append(fileInfo.getFileType()).append(",");
+                line.append(fileInfo.getPdfVersion()).append(",");
+                line.append(fileInfo.getCreator()).append(",");
+                line.append(fileInfo.getImages()).append(",");
+                line.append(fileInfo.getFonts()).append(",");
                 writer.write(line.toString() + "\n");
             }
 
-            System.out.println("Se ha guardado la información en el archivo CSV: " + csvFileName);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -248,6 +329,7 @@ public class PDFFileMetadataReader {
     StringBuilder infoText = new StringBuilder();
     for (PDFFileInfo fileInfo : pdfFiles) {
         infoText.append("Nombre: ").append(fileInfo.getName()).append(", ");
+        infoText.append("Autor: ").append(fileInfo.getAuthor()).append(", ");
         infoText.append("Tamaño de Archivo: ").append(fileInfo.getFileSize()).append(" bytes, ");
         infoText.append("Tamaño de Página: ").append(fileInfo.getPageSize()).append(", ");
         infoText.append("Páginas: ").append(fileInfo.getPageCount()).append(", ");
@@ -255,10 +337,10 @@ public class PDFFileMetadataReader {
         infoText.append("Asunto: ").append(fileInfo.getSubject()).append(", ");
         infoText.append("Palabras Clave: ").append(fileInfo.getKeywords()).append(", ");
         infoText.append("Tipo de Archivo: ").append(fileInfo.getFileType()).append(", ");
-        infoText.append("Versión de PDF ").append(fileInfo.getPdfVersion()).append(", ");
+        infoText.append("Versión de PDF: ").append(fileInfo.getPdfVersion()).append(", ");
         infoText.append("Aplicación por la que fue creada: ").append(fileInfo.getCreator()).append(", ");
         infoText.append("Lista de Imágenes en el Documento: ").append(fileInfo.getImages()).append(", ");
-        infoText.append("Lista de Fuentes en el Documento: ").append(fileInfo.getSources()).append(", ");
+        infoText.append("Lista de Fuentes en el Documento: ").append(fileInfo.getFonts()).append(", ");
 
         infoText.append("\n"); // Agrega un salto de línea entre cada archivo
     }
