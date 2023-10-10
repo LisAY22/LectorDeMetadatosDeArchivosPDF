@@ -1,18 +1,21 @@
 package com.mycompany.pdffilemetadatareader;
-import com.formdev.flatlaf.FlatDarkLaf; // Importar la clase de estilo FlatLaf que se encuentra almacenada de manera local
-
+import com.formdev.flatlaf.FlatDarkLaf;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentInformation;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentInformation;
-import org.apache.pdfbox.Loader;
 
 public class PDFFileMetadataReader {
+    
+    private static String csvFileName = "metadata.csv"; // Nombre del archivo CSV
 
     public static void main(String[] args) {
         // Establecer FlatLaf como el estilo de la interfaz gráfica
@@ -21,6 +24,9 @@ public class PDFFileMetadataReader {
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
+        
+        // Verificar si ya existe un archivo CSV
+        boolean isFirstTime = !new File(csvFileName).exists();
 
         JFrame frame = new JFrame("PDF File Metadata Reader");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -49,7 +55,11 @@ public class PDFFileMetadataReader {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                mostrarVentanaOpciones();
+                if (isFirstTime) {
+                    ingresarRuta();
+                } else {
+                    mostrarVentanaOpciones();
+                }
             }
         });
         buttonPanel.add(continueButton);
@@ -191,13 +201,45 @@ public class PDFFileMetadataReader {
     }
 
     private static void guardarInformacionEnArchivo(List<PDFFileInfo> pdfFiles) {
-        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("pdfInfo.dat"))) {
-            outputStream.writeObject(pdfFiles);
+    try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("pdfInfo.dat"))) {
+        outputStream.writeObject(pdfFiles);
+        
+        // Guardar la información en un archivo CSV
+        guardarInformacionEnCSV(pdfFiles);
+        
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+
+    private static void guardarInformacionEnCSV(List<PDFFileInfo> pdfFiles) {
+        try (FileWriter writer = new FileWriter(csvFileName)) {
+            // Escribir el encabezado CSV
+            writer.write("Nombre,Tamaño de Archivo (bytes),Tamaño de Página,Páginas,Título,Asunto,Palabras Clave,Tipo de Archivo,Versión de PDF,Aplicación por la que fue creada,Lista de Imágenes en el Documento,Lista de Fuentes en el Documento\n");
+
+            // Llenar el archivo CSV con los datos de los archivos PDF
+            for (PDFFileInfo fileInfo : pdfFiles) {
+                StringBuilder line = new StringBuilder();
+                line.append("\"").append(fileInfo.getName()).append("\",");
+                line.append(fileInfo.getFileSize()).append(",");
+                line.append(fileInfo.getPageSize()).append(",");
+                line.append(fileInfo.getPageCount()).append(",");
+                line.append("\"").append(fileInfo.getTitle()).append("\",");
+                line.append("\"").append(fileInfo.getSubject()).append("\",");
+                line.append("\"").append(fileInfo.getKeywords()).append("\",");
+                line.append("\"").append(fileInfo.getFileType()).append("\",");
+                line.append("\"").append(fileInfo.getPdfVersion()).append("\",");
+                line.append("\"").append(fileInfo.getCreator()).append("\",");
+                // Puedes agregar la información de imágenes y fuentes de manera similar si lo deseas
+                writer.write(line.toString() + "\n");
+            }
+
+            System.out.println("Se ha guardado la información en el archivo CSV: " + csvFileName);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    
+
     private static void continuarMismaRuta() {
     // Cargar la información desde el archivo
     List<PDFFileInfo> pdfFiles = cargarInformacionDesdeArchivo();
