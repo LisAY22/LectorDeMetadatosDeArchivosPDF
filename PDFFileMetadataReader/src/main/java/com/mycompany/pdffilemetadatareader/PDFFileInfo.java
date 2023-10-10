@@ -2,7 +2,6 @@ package com.mycompany.pdffilemetadatareader;
 import java.io.File;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
 
 public class PDFFileInfo implements Serializable {
     private File file;
@@ -17,12 +16,12 @@ public class PDFFileInfo implements Serializable {
     private String fileType;
     private float pdfVersion;
     private String creator;
-    private List<String> images;
-    private Set<String> fonts;
+    private List<String> imagesHeaders;
+    private List<String> imagesFonts;
 
     // Constructor
     public PDFFileInfo(File file, String name, String author, long fileSize, String pageSize, int pageCount, String title, String subject,
-                       String keywords, String fileType, float pdfVersion, String creator, List<String> images, Set<String> fonts) {
+                       String keywords, String fileType, float pdfVersion, String creator, List<String> imagesHeaders, List<String> imagesFonts) {
         this.file = file;
         this.name = name;
         this.author = author;
@@ -35,8 +34,8 @@ public class PDFFileInfo implements Serializable {
         this.fileType = fileType;
         this.pdfVersion = pdfVersion;
         this.creator = creator;
-        this.images = images;
-        this.fonts = fonts;
+        this.imagesHeaders = imagesHeaders;
+        this.imagesFonts = imagesFonts;
     }
 
     // Métodos getter y setter para acceder a los atributos
@@ -137,20 +136,20 @@ public class PDFFileInfo implements Serializable {
         this.creator = creator;
     }
     
-    public List<String> getImages(){
-        return images;
+    public List<String> getImagesHeaders(){
+        return imagesHeaders;
     }
     
-    public void setImages(List<String> images) {
-        this.images = images;
+    public void setImagesHeaders(List<String> imagesHeaders) {
+        this.imagesHeaders = imagesHeaders;
     }
     
-    public Set<String> getFonts() {
-        return fonts;
+    public List<String> getImagesFonts() {
+        return imagesFonts;
     }
     
-    public void setFonts(Set<String> fonts) {
-        this.fonts = fonts;
+    public void setImagesFonts(List<String> imagesFonts) {
+        this.imagesFonts = imagesFonts;
     }
 
 }

@@ -16,22 +16,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+
 
 
 public class PDFFileMetadataReader {
@@ -225,88 +218,20 @@ public class PDFFileMetadataReader {
         String creator = info.getCreator();
         int pageCount = document.getNumberOfPages();
         long fileSize = pdfFile.length();
-        List<String> images = obtenerImagenesDesdePDF(document);
-        Set<String> fonts = extractFontsFromPDF(pdfFile.getAbsolutePath());
+        List<String> imagesHeaders = new ArrayList<>();
+        List<String> imagesFonts = new ArrayList<>();
         String pageSize = getPageSize(document);
 
         document.close();
 
         // Crea una instancia de PDFFileInfo con la información recopilada
-        return new PDFFileInfo(pdfFile, name, author, fileSize, pageSize, pageCount, title, subject, keywords, fileType, pdfVersion, creator, images, fonts);
+        return new PDFFileInfo(pdfFile, name, author, fileSize, pageSize, pageCount, title, subject, keywords, fileType, pdfVersion, creator, imagesHeaders,imagesFonts);
     } catch (IOException e) {
         e.printStackTrace();
         return null;
         }
     }
-    
-    
-    private static List<String> obtenerImagenesDesdePDF(PDDocument document) {
-    // Crea una lista para almacenar las rutas de las imágenes encontradas
-    List<String> images = new ArrayList<>();
-    try {
-        // Itera a través de todas las páginas del documento PDF
-        for (int pageNumber = 0; pageNumber < document.getNumberOfPages(); pageNumber++) {
-            // Obtiene una página específica del PDF
-            PDPage page = document.getPage(pageNumber);
-            // Obtiene los recursos de la página, como imágenes y fuentes
-            PDResources resources = page.getResources();
-            // Obtiene los nombres de los objetos XObject (que pueden ser imágenes)
-            Iterable<COSName> xObjectNames = resources.getXObjectNames();
-            // Itera a través de los nombres de objetos XObject
-            for (COSName xObjectName : xObjectNames) {
-                // Verifica si el objeto XObject actual es una imagen
-                if (resources.isImageXObject(xObjectName)) {
-                    // Obtiene el objeto XObject de la imagen
-                    PDImageXObject imageXObject = (PDImageXObject) resources.getXObject(xObjectName);
-                    
-                    // Agrega la representación en cadena del objeto COS a la lista de imágenes
-                    // Esto puede ser útil para identificar la imagen, pero normalmente es una referencia interna
-                    images.add(imageXObject.getCOSObject().toString());
-                }
-            }
-        }
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-    // Devuelve la lista de rutas de las imágenes encontradas en el PDF
-    return images;
-    }
-
-    
-    private static Set<String> extractFontsFromPDF(String pdfFilePath) throws IOException {
-    // Crea un conjunto para almacenar los nombres de las fuentes únicas encontradas en el PDF
-    Set<String> fonts = new HashSet<>();   
-    // Carga el documento PDF desde el archivo especificado
-    PDDocument document = Loader.loadPDF(new File(pdfFilePath));   
-    // Itera a través de todas las páginas del documento PDF
-    for (PDPage page : document.getPages()) {
-        // Obtiene los recursos de la página, que pueden incluir fuentes
-        PDResources resources = page.getResources();      
-        // Obtiene los nombres de las fuentes utilizadas en la página
-        for (COSName fontName : resources.getFontNames()) {
-            // Obtiene la fuente asociada al nombre de la fuente
-            PDFont font = resources.getFont(fontName);
-            
-            // Verifica si la fuente es de tipo PDType0Font (fuente compuesta) o PDType1Font (fuente simple)
-            if (font instanceof PDType0Font) {
-                PDType0Font type0Font = (PDType0Font) font;
-                
-                // Agrega el nombre de la fuente al conjunto de fuentes (fuentes únicas)
-                fonts.add(type0Font.getName());
-            } else if (font instanceof PDType1Font) {
-                PDType1Font type1Font = (PDType1Font) font;
-                
-                // Agrega el nombre de la fuente al conjunto de fuentes (fuentes únicas)
-                fonts.add(type1Font.getName());
-            }
-        }
-    }    
-    // Cierra el documento PDF
-    document.close();   
-    // Devuelve el conjunto de nombres de fuentes únicas encontradas en el PDF
-    return fonts;
-    }
-
+ 
     
     private static String getPageSize(PDDocument file) {
     // Crea un objeto DecimalFormat para formatear los valores de tamaño de página
@@ -364,8 +289,8 @@ public class PDFFileMetadataReader {
                 line.append(fileInfo.getFileType()).append(",");
                 line.append(fileInfo.getPdfVersion()).append(",");
                 line.append(fileInfo.getCreator()).append(",");
-                line.append(fileInfo.getImages()).append(",");
-                line.append(fileInfo.getFonts()).append(",");
+                line.append(fileInfo.getImagesHeaders()).append(",");
+                line.append(fileInfo.getImagesFonts()).append(",");
                 writer.write(line.toString() + "\n");
             }
         } catch (IOException e) {
@@ -392,8 +317,8 @@ public class PDFFileMetadataReader {
         infoText.append("Tipo de Archivo: ").append(fileInfo.getFileType()).append(", ");
         infoText.append("Versión de PDF: ").append(fileInfo.getPdfVersion()).append(", ");
         infoText.append("Aplicación por la que fue creada: ").append(fileInfo.getCreator()).append(", ");
-        infoText.append("Lista de Imágenes en el Documento: ").append(fileInfo.getImages()).append(", ");
-        infoText.append("Lista de Fuentes en el Documento: ").append(fileInfo.getFonts()).append(", ");
+        infoText.append("Lista de Imágenes en el Documento: ").append(fileInfo.getImagesHeaders()).append(", ");
+        infoText.append("Lista de Fuentes en el Documento: ").append(fileInfo.getImagesFonts()).append(", ");
 
         infoText.append("\n"); // Agrega un salto de línea entre cada archivo
     }
