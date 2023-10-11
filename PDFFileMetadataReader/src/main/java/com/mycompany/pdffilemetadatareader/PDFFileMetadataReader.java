@@ -20,11 +20,12 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
-import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.cos.COSName;
 
 
 public class PDFFileMetadataReader {
@@ -218,21 +219,39 @@ public class PDFFileMetadataReader {
         String creator = info.getCreator();
         int pageCount = document.getNumberOfPages();
         long fileSize = pdfFile.length();
-        List<String> imagesHeaders = new ArrayList<>();
-        List<String> imagesFonts = new ArrayList<>();
+        int imagesCount = countImagesInPDF(document);
+        int imagesFontsCount = 0;
+        // int imagesFontsCount = countImagesWithFonts(document);
         String pageSize = getPageSize(document);
 
         document.close();
 
         // Crea una instancia de PDFFileInfo con la información recopilada
-        return new PDFFileInfo(pdfFile, name, author, fileSize, pageSize, pageCount, title, subject, keywords, fileType, pdfVersion, creator, imagesHeaders,imagesFonts);
+        return new PDFFileInfo(pdfFile, name, author, fileSize, pageSize, pageCount, title, subject, keywords, fileType, pdfVersion, creator, imagesCount,imagesFontsCount);
     } catch (IOException e) {
         e.printStackTrace();
         return null;
         }
     }
- 
     
+    
+    private static int countImagesInPDF(PDDocument document) {
+    int imageCount = 0;
+    for (int pageNumber = 0; pageNumber < document.getNumberOfPages(); pageNumber++) {
+        PDPage page = document.getPage(pageNumber);
+        PDResources resources = page.getResources();
+        Iterable<COSName> xObjectNames = resources.getXObjectNames();
+        for (COSName xObjectName : xObjectNames) {
+            if (resources.isImageXObject(xObjectName)) {
+                // Incrementa el contador de imágenes
+                imageCount++;
+            }
+        }
+    }
+    return imageCount;
+    }
+    
+ 
     private static String getPageSize(PDDocument file) {
     // Crea un objeto DecimalFormat para formatear los valores de tamaño de página
     DecimalFormat df = new DecimalFormat("###.#"); 
@@ -274,7 +293,7 @@ public class PDFFileMetadataReader {
     private static void guardarInformacionEnCSV(List<PDFFileInfo> pdfFiles) {
         try (FileWriter writer = new FileWriter(csvFileName)) {
             // Escribir el encabezado CSV
-            writer.write("Nombre,Autor,Tamaño de Archivo (bytes),Tamaño de Página,Páginas,Título,Asunto,Palabras Clave,Tipo de Archivo,Versión de PDF,Aplicación por la que fue creada,Lista de Imágenes en el Documento,Lista de Fuentes en el Documento\n");
+            writer.write("Nombre,Autor,Tamaño de Archivo (bytes),Tamaño de Página,Páginas,Título,Asunto,Palabras Clave,Tipo de Archivo,Versión de PDF,Aplicación por la que fue creada,Cantidad de Imágenes en el Documento,Cantidad de Fuentes de Imágenes en el Documento\n");
             // Llenar el archivo CSV con los datos de los archivos PDF
             for (PDFFileInfo fileInfo : pdfFiles) {
                 StringBuilder line = new StringBuilder();
@@ -289,8 +308,8 @@ public class PDFFileMetadataReader {
                 line.append(fileInfo.getFileType()).append(",");
                 line.append(fileInfo.getPdfVersion()).append(",");
                 line.append(fileInfo.getCreator()).append(",");
-                line.append(fileInfo.getImagesHeaders()).append(",");
-                line.append(fileInfo.getImagesFonts()).append(",");
+                line.append(fileInfo.getImagesCount()).append(",");
+                line.append(fileInfo.getImagesFontsCount()).append(",");
                 writer.write(line.toString() + "\n");
             }
         } catch (IOException e) {
@@ -317,8 +336,8 @@ public class PDFFileMetadataReader {
         infoText.append("Tipo de Archivo: ").append(fileInfo.getFileType()).append(", ");
         infoText.append("Versión de PDF: ").append(fileInfo.getPdfVersion()).append(", ");
         infoText.append("Aplicación por la que fue creada: ").append(fileInfo.getCreator()).append(", ");
-        infoText.append("Lista de Imágenes en el Documento: ").append(fileInfo.getImagesHeaders()).append(", ");
-        infoText.append("Lista de Fuentes en el Documento: ").append(fileInfo.getImagesFonts()).append(", ");
+        infoText.append("Cantidad de Imágenes en el Documento: ").append(fileInfo.getImagesCount()).append(", ");
+        infoText.append("Cantidad de Fuentes de Imágenes Documento: ").append(fileInfo.getImagesFontsCount()).append(", ");
 
         infoText.append("\n"); // Agrega un salto de línea entre cada archivo
     }

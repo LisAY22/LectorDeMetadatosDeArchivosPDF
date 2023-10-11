@@ -1,7 +1,6 @@
 package com.mycompany.pdffilemetadatareader;
 import java.io.File;
 import java.io.Serializable;
-import java.util.List;
 
 public class PDFFileInfo implements Serializable {
     private File file;
@@ -16,12 +15,12 @@ public class PDFFileInfo implements Serializable {
     private String fileType;
     private float pdfVersion;
     private String creator;
-    private List<String> imagesHeaders;
-    private List<String> imagesFonts;
+    private int imagesCount;
+    private int imagesFontsCount;
 
     // Constructor
     public PDFFileInfo(File file, String name, String author, long fileSize, String pageSize, int pageCount, String title, String subject,
-                       String keywords, String fileType, float pdfVersion, String creator, List<String> imagesHeaders, List<String> imagesFonts) {
+                       String keywords, String fileType, float pdfVersion, String creator, int imagesCount, int imagesFontsCount) {
         this.file = file;
         this.name = name;
         this.author = author;
@@ -34,8 +33,8 @@ public class PDFFileInfo implements Serializable {
         this.fileType = fileType;
         this.pdfVersion = pdfVersion;
         this.creator = creator;
-        this.imagesHeaders = imagesHeaders;
-        this.imagesFonts = imagesFonts;
+        this.imagesCount = imagesCount;
+        this.imagesFontsCount = imagesFontsCount;
     }
 
     // Métodos getter y setter para acceder a los atributos
@@ -136,20 +135,20 @@ public class PDFFileInfo implements Serializable {
         this.creator = creator;
     }
     
-    public List<String> getImagesHeaders(){
-        return imagesHeaders;
+    public int getImagesCount(){
+        return imagesCount;
     }
     
-    public void setImagesHeaders(List<String> imagesHeaders) {
-        this.imagesHeaders = imagesHeaders;
+    public void setImagesCount(int imagesCount) {
+        this.imagesCount = imagesCount;
     }
     
-    public List<String> getImagesFonts() {
-        return imagesFonts;
+    public int getImagesFontsCount() {
+        return imagesFontsCount;
     }
     
-    public void setImagesFonts(List<String> imagesFonts) {
-        this.imagesFonts = imagesFonts;
+    public void setImagesFontsCount(int imagesFontsCount) {
+        this.imagesFontsCount = imagesFontsCount;
     }
 
 }
