@@ -26,6 +26,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.text.PDFTextStripper;
 
 
 public class PDFFileMetadataReader {
@@ -220,8 +221,7 @@ public class PDFFileMetadataReader {
         int pageCount = document.getNumberOfPages();
         long fileSize = pdfFile.length();
         int imagesCount = countImagesInPDF(document);
-        int imagesFontsCount = 0;
-        // int imagesFontsCount = countImagesWithFonts(document);
+        int imagesFontsCount = countImagesWithFonts(document, "Fuente");
         String pageSize = getPageSize(document);
 
         document.close();
@@ -236,22 +236,49 @@ public class PDFFileMetadataReader {
     
     
     private static int countImagesInPDF(PDDocument document) {
-    int imageCount = 0;
+    int count = 0;
+
     for (int pageNumber = 0; pageNumber < document.getNumberOfPages(); pageNumber++) {
         PDPage page = document.getPage(pageNumber);
         PDResources resources = page.getResources();
         Iterable<COSName> xObjectNames = resources.getXObjectNames();
+
         for (COSName xObjectName : xObjectNames) {
             if (resources.isImageXObject(xObjectName)) {
-                // Incrementa el contador de imágenes
-                imageCount++;
+                // El recurso XObject es una imagen, incrementa el contador de imágenes.
+                count++;
+            } else {
+                // El recurso XObject no es una imagen, puede ser una gráfica u otro elemento.
+                count++; // Incrementa el contador de gráficas (o recursos no reconocidos como imágenes).
             }
         }
     }
-    return imageCount;
+
+    return count;
     }
     
- 
+    
+    private static int countImagesWithFonts(PDDocument document, String wordToCount) {
+    int count = 0;
+
+    try {
+        PDFTextStripper stripper = new PDFTextStripper();
+        String pdfText = stripper.getText(document);
+
+        // Contar las ocurrencias de la palabra en el texto del PDF
+        int index = pdfText.toLowerCase().indexOf(wordToCount.toLowerCase());
+        while (index != -1) {
+            count++;
+            index = pdfText.toLowerCase().indexOf(wordToCount.toLowerCase(), index + 1);
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+
+    return count;
+}
+
+    
     private static String getPageSize(PDDocument file) {
     // Crea un objeto DecimalFormat para formatear los valores de tamaño de página
     DecimalFormat df = new DecimalFormat("###.#"); 
