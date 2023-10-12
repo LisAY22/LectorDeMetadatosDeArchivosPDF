@@ -50,7 +50,7 @@ public class PDFFileMetadataReader {
         frame.setResizable(false);
 
         // Panel para la imagen
-        ImageIcon imageIcon = new ImageIcon("C:\\Users\\lisaj\\OneDrive\\Documentos\\GitHub\\LectorDeMetadatosDeArchivosPDF\\PDF file metadata reader.png");
+        ImageIcon imageIcon = new ImageIcon("C:\\Users\\karol\\Documentos\\GitHub\\LectorDeMetadatosDeArchivosPDF\\PDF file metadata reader.png");
         JLabel imageLabel = new JLabel(imageIcon);
         imageLabel.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
 
@@ -95,7 +95,7 @@ public class PDFFileMetadataReader {
 
     
     private static void mostrarVentanaOpciones() {
-        JFrame ventanaOpciones = new JFrame("Opciones");
+        JFrame ventanaOpciones = new JFrame("Options");
         ventanaOpciones.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventanaOpciones.setSize(400, 300);
         ventanaOpciones.setResizable(false);
@@ -211,13 +211,38 @@ public class PDFFileMetadataReader {
         PDDocumentInformation info = document.getDocumentInformation();
         
         String name = pdfFile.getName();
-        String author = info.getAuthor();
-        String title = info.getTitle();
-        String subject = info.getSubject();
-        String keywords = info.getKeywords();
+        String author;
+        if (info.getAuthor() != null) {
+            author = info.getAuthor();
+        } else {
+            author = "Sin autor";
+        }
+        String title;
+        if (info.getTitle() != null){
+            title = info.getTitle();
+        } else {
+            title = "Sin título";
+        }
+        String subject;
+        if (info.getSubject() != null) {
+            subject = info.getSubject();
+        } else {
+            subject = "Sin asunto";
+        }
+        String keywords;
+        if (info.getKeywords() != null && !info.getKeywords().trim().isEmpty()) {
+            keywords = info.getKeywords();
+        } else {
+            keywords = "Sin palabras clave";
+        }
         String fileType = "PDF"; 
         float pdfVersion = document.getVersion();
-        String creator = info.getCreator();
+        String creator;
+        if (info.getCreator() != null) {
+            creator = info.getCreator();
+        } else {
+            creator = "Sin aplicación de origen";
+        }
         int pageCount = document.getNumberOfPages();
         long fileSize = pdfFile.length();
         int imagesCount = countImagesInPDF(document);
@@ -320,29 +345,30 @@ public class PDFFileMetadataReader {
     private static void guardarInformacionEnCSV(List<PDFFileInfo> pdfFiles) {
         try (FileWriter writer = new FileWriter(csvFileName)) {
             // Escribir el encabezado CSV
-            writer.write("Nombre,Autor,Tamaño de Archivo (bytes),Tamaño de Página,Páginas,Título,Asunto,Palabras Clave,Tipo de Archivo,Versión de PDF,Aplicación por la que fue creada,Cantidad de Imágenes en el Documento,Cantidad de Fuentes de Imágenes en el Documento\n");
+            writer.write("Name,Author,File Size (bytes),Page Size,Pages,Title,Subject,Keywords,FileType,Version,Source application,Images,Fonts\n");
             // Llenar el archivo CSV con los datos de los archivos PDF
             for (PDFFileInfo fileInfo : pdfFiles) {
                 StringBuilder line = new StringBuilder();
-                line.append(fileInfo.getName()).append(",");
-                line.append(fileInfo.getAuthor()).append(",");
-                line.append(fileInfo.getFileSize()).append(",");
-                line.append(fileInfo.getPageSize()).append(",");
-                line.append(fileInfo.getPageCount()).append(",");
-                line.append(fileInfo.getTitle()).append(",");
-                line.append(fileInfo.getSubject()).append(",");
-                line.append(fileInfo.getKeywords()).append(",");
-                line.append(fileInfo.getFileType()).append(",");
-                line.append(fileInfo.getPdfVersion()).append(",");
-                line.append(fileInfo.getCreator()).append(",");
-                line.append(fileInfo.getImagesCount()).append(",");
-                line.append(fileInfo.getImagesFontsCount()).append(",");
+                line.append(fileInfo.getName()).append(", ");
+                line.append(fileInfo.getAuthor()).append(", ");
+                line.append(fileInfo.getFileSize()).append(", ");
+                line.append(fileInfo.getPageSize()).append(", ");
+                line.append(fileInfo.getPageCount()).append(", ");
+                line.append(fileInfo.getTitle()).append(", ");
+                line.append(fileInfo.getSubject()).append(", ");
+                line.append(fileInfo.getKeywords()).append(", ");
+                line.append(fileInfo.getFileType()).append(", ");
+                line.append(fileInfo.getPdfVersion()).append(", ");
+                line.append(fileInfo.getCreator()).append(", ");
+                line.append(fileInfo.getImagesCount()).append(", ");
+                line.append(fileInfo.getImagesFontsCount()).append(", ");
                 writer.write(line.toString() + "\n");
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     
     private static void continuarMismaRuta() {
@@ -359,7 +385,7 @@ public class PDFFileMetadataReader {
         infoText.append("Páginas: ").append(fileInfo.getPageCount()).append(", ");
         infoText.append("Titulo: ").append(fileInfo.getTitle()).append(", ");
         infoText.append("Asunto: ").append(fileInfo.getSubject()).append(", ");
-        infoText.append("Palabras Clave: ").append(fileInfo.getKeywords()).append(", ");
+        infoText.append("Palabras Clave: ").append(fileInfo.getKeywords()).append(",  ");
         infoText.append("Tipo de Archivo: ").append(fileInfo.getFileType()).append(", ");
         infoText.append("Versión de PDF: ").append(fileInfo.getPdfVersion()).append(", ");
         infoText.append("Aplicación por la que fue creada: ").append(fileInfo.getCreator()).append(", ");
