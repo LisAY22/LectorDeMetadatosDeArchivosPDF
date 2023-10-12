@@ -74,6 +74,7 @@ public class PDFFileMetadataReader {
                 // Si es la primera vez, se ingresará la ruta
                 if (isFirstTime) {
                     ingresarRuta();
+                    mostrarVentanaOpciones();
                 // Si no es la primera vez se abrira una ventana con dos opciones
                 } else {
                     mostrarVentanaOpciones();
@@ -390,7 +391,7 @@ public class PDFFileMetadataReader {
         infoText.append("Versión de PDF: ").append(fileInfo.getPdfVersion()).append(", ");
         infoText.append("Aplicación por la que fue creada: ").append(fileInfo.getCreator()).append(", ");
         infoText.append("Cantidad de Imágenes en el Documento: ").append(fileInfo.getImagesCount()).append(", ");
-        infoText.append("Cantidad de Fuentes de Imágenes Documento: ").append(fileInfo.getImagesFontsCount()).append(", ");
+        infoText.append("Cantidad de Fuentes de Imágenes Documento: ").append(fileInfo.getImagesFontsCount());
 
         infoText.append("\n"); // Agrega un salto de línea entre cada archivo
     }
