@@ -64,9 +64,9 @@ public class PDFFileMetadataReader {
         continueButton.setOpaque(true); // Establece que el botón sea opaco
         continueButton.setBorderPainted(false); // Quita el borde del botón
         continueButton.setFocusPainted(false); // Deshabilita el efecto de resaltado
-        continueButton.setPreferredSize(new Dimension(150, 50)); // Ajusta el tamaño del botón
-        // Ajustar el tamaño del botón
-        continueButton.setPreferredSize(new Dimension(200, 50));
+        continueButton.setPreferredSize(new Dimension(200, 50)); // Ajusta el tamaño del botón
+        
+        
         continueButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -373,41 +373,61 @@ public class PDFFileMetadataReader {
 
     
     private static void continuarMismaRuta() {
-    // Cargar la información desde el archivo
-    List<PDFFileInfo> pdfFiles = cargarInformacionDesdeArchivo();
+    
+        JFrame ventanaVistaArchivos = new JFrame("File view");
+        ventanaVistaArchivos.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        ventanaVistaArchivos.setSize(500, 400);
+        ventanaVistaArchivos.setResizable(false);
 
-    // Construir una cadena de texto con la información de los archivos PDF
-    StringBuilder infoText = new StringBuilder();
-    for (PDFFileInfo fileInfo : pdfFiles) {
-        infoText.append("Nombre: ").append(fileInfo.getName()).append(", ");
-        infoText.append("Autor: ").append(fileInfo.getAuthor()).append(", ");
-        infoText.append("Tamaño de Archivo: ").append(fileInfo.getFileSize()).append(" bytes, ");
-        infoText.append("Tamaño de Página: ").append(fileInfo.getPageSize()).append(", ");
-        infoText.append("Páginas: ").append(fileInfo.getPageCount()).append(", ");
-        infoText.append("Titulo: ").append(fileInfo.getTitle()).append(", ");
-        infoText.append("Asunto: ").append(fileInfo.getSubject()).append(", ");
-        infoText.append("Palabras Clave: ").append(fileInfo.getKeywords()).append(",  ");
-        infoText.append("Tipo de Archivo: ").append(fileInfo.getFileType()).append(", ");
-        infoText.append("Versión de PDF: ").append(fileInfo.getPdfVersion()).append(", ");
-        infoText.append("Aplicación por la que fue creada: ").append(fileInfo.getCreator()).append(", ");
-        infoText.append("Cantidad de Imágenes en el Documento: ").append(fileInfo.getImagesCount()).append(", ");
-        infoText.append("Cantidad de Fuentes de Imágenes Documento: ").append(fileInfo.getImagesFontsCount());
+        // Crea un JTextArea para mostrar la información
+        JTextArea textArea = new JTextArea();
+        textArea.setEditable(false);
 
-        infoText.append("\n"); // Agrega un salto de línea entre cada archivo
-    }
+        // Agrega el JTextArea a la ventana
+        JScrollPane scrollPane = new JScrollPane(textArea);
 
-    // Muestra la cadena de texto en un cuadro de diálogo
-    JOptionPane.showMessageDialog(null, "Información cargada desde el archivo:\n" + infoText.toString());
-    }
+
+        // Cargar la información desde el archivo
+        List<PDFFileInfo> pdfFiles = cargarInformacionDesdeArchivo();
+
+        // Construir una cadena de texto con la información de los archivos PDF
+        StringBuilder infoText = new StringBuilder();
+            for (PDFFileInfo fileInfo : pdfFiles) {
+                infoText.append("Nombre: ").append(fileInfo.getName()).append(", ");
+                infoText.append("Autor: ").append(fileInfo.getAuthor()).append(", ");
+                infoText.append("Tamaño de Archivo: ").append(fileInfo.getFileSize()).append(" bytes, ");
+                infoText.append("Tamaño de Página: ").append(fileInfo.getPageSize()).append(", ");
+                infoText.append("Páginas: ").append(fileInfo.getPageCount()).append(", ");
+                infoText.append("Titulo: ").append(fileInfo.getTitle()).append(", ");
+                infoText.append("Asunto: ").append(fileInfo.getSubject()).append(", ");
+                infoText.append("Palabras Clave: ").append(fileInfo.getKeywords()).append(",  ");
+                infoText.append("Tipo de Archivo: ").append(fileInfo.getFileType()).append(", ");
+                infoText.append("Versión de PDF: ").append(fileInfo.getPdfVersion()).append(", ");
+                infoText.append("Aplicación por la que fue creada: ").append(fileInfo.getCreator()).append(", ");
+                infoText.append("Cantidad de Imágenes en el Documento: ").append(fileInfo.getImagesCount()).append(", ");
+                infoText.append("Cantidad de Fuentes de Imágenes Documento: ").append(fileInfo.getImagesFontsCount());
+
+                infoText.append("\n"); // Agrega un salto de línea entre cada archivo
+            }
+
+        // Establece el texto en el JTextArea
+        textArea.setText("Información cargada desde el directorio:\n" + infoText.toString());
+        
+        ventanaVistaArchivos.getContentPane().add(scrollPane);
+        ventanaVistaArchivos.setLocationRelativeTo(null);
+        ventanaVistaArchivos.setVisible(true);
+        }
+
+
+        private static List<PDFFileInfo> cargarInformacionDesdeArchivo() {
+            List<PDFFileInfo> pdfFiles = new ArrayList<>();
+            try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("pdfInfo.dat"))) {
+                pdfFiles = (List<PDFFileInfo>) inputStream.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            return pdfFiles;
+        }
 
     
-    private static List<PDFFileInfo> cargarInformacionDesdeArchivo() {
-        List<PDFFileInfo> pdfFiles = new ArrayList<>();
-        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("pdfInfo.dat"))) {
-            pdfFiles = (List<PDFFileInfo>) inputStream.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return pdfFiles;
-    }
 }
