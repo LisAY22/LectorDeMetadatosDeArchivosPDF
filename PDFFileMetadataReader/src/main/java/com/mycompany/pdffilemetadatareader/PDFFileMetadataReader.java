@@ -494,23 +494,26 @@ public class PDFFileMetadataReader {
 
     private static void mostrarInformacionPDF(PDFFileInfo fileInfo) {
         JTextArea infoTextArea = new JTextArea();
-        infoTextArea.setBackground(Color.WHITE);
-        infoTextArea.setForeground(Color.BLACK);
+//        infoTextArea.setBackground(Color.WHITE);
+//        infoTextArea.setForeground(Color.BLACK);
         infoTextArea.setEditable(false);
+        infoTextArea.setFont(new Font("Arial", Font.PLAIN, 14));
+        infoTextArea.setMargin(new Insets(10, 10, 10, 10));
+
         infoTextArea.setText("Nombre: " + fileInfo.getName() + "\n"
                 + "Autor: " + fileInfo.getAuthor() + "\n"
-                + "Asunto: " + fileInfo.getSubject() + "\n"
-                + "Tamaño de Archivo: " + fileInfo.getFileSize() + " bytes\n"
-                + "Tamaño de Página: " + fileInfo.getPageSize() + "\n"
-                + "Páginas: " + fileInfo.getPageCount() + "\n"
-                + "Titulo: " + fileInfo.getTitle() + "\n"
-                + "Asunto: " + fileInfo.getSubject() + "\n"
-                + "Palabras Clave: " + fileInfo.getKeywords() + "\n"
-                + "Tipo de Archivo: " + fileInfo.getFileType() + "\n"
-                + "Versión de PDF: " + fileInfo.getPdfVersion() + "\n"
-                + "Aplicación por la que fue creada: " + fileInfo.getCreator() + "\n"
-                + "Cantidad de Imágenes en el Documento: " + fileInfo.getImagesCount() + "\n"
-                + "Cantidad de Fuentes de Imágenes Documento: " + fileInfo.getImagesFontsCount() + "\n" );
+                + "Asunto: " + fileInfo.getSubject() + "\n\n"
+                + "Tamaño del Archivo: " + fileInfo.getFileSize() + " bytes\n"
+                + "Tamaño de la Página: " + fileInfo.getPageSize() + "\n"
+                + "Número de Páginas: " + fileInfo.getPageCount() + "\n\n"
+                + "Detalles del PDF:\n"
+                + "   - Versión: " + fileInfo.getPdfVersion() + "\n"
+                + "   - Tipo de Archivo: " + fileInfo.getFileType() + "\n"
+                + "   - Creador: " + fileInfo.getCreator() + "\n\n"
+                + "Imágenes:\n"
+                + "   - Cantidad: " + fileInfo.getImagesCount() + "\n"
+                + "   - Cantidad de Fuentes de Imágenes: " + fileInfo.getImagesFontsCount() + "\n\n"
+                + "Palabras Clave: " + fileInfo.getKeywords());
 
         JFrame infoFrame = new JFrame("File Information");
         infoFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -519,6 +522,7 @@ public class PDFFileMetadataReader {
         infoFrame.getContentPane().add(new JScrollPane(infoTextArea));
         infoFrame.setLocationRelativeTo(null);
         infoFrame.setVisible(true);
+
     }
 
 }
