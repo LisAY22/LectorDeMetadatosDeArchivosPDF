@@ -39,7 +39,7 @@ public class PDFFileMetadataReader {
         try {
             UIManager.setLookAndFeel(new FlatDarkLaf());
         } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
         
         // Verificar si ya existe un archivo CSV
@@ -209,54 +209,55 @@ public class PDFFileMetadataReader {
     
     private static PDFFileInfo obtenerInformacionPDF(File pdfFile) {
     try {
-        PDDocument document = Loader.loadPDF(pdfFile);
-        PDDocumentInformation info = document.getDocumentInformation();
-        
-        String name = pdfFile.getName();
+        String name;
         String author;
-        if (info.getAuthor() != null) {
-            author = info.getAuthor();
-        } else {
-            author = "Sin autor";
-        }
         String title;
-        if (info.getTitle() != null){
-            title = info.getTitle();
-        } else {
-            title = "Sin título";
-        }
         String subject;
-        if (info.getSubject() != null) {
-            subject = info.getSubject();
-        } else {
-            subject = "Sin asunto";
-        }
         String keywords;
-        if (info.getKeywords() != null && !info.getKeywords().trim().isEmpty()) {
-            keywords = info.getKeywords();
-        } else {
-            keywords = "Sin palabras clave";
-        }
-        String fileType = "PDF"; 
-        float pdfVersion = document.getVersion();
+        String fileType;
+        float pdfVersion;
         String creator;
-        if (info.getCreator() != null) {
-            creator = info.getCreator();
-        } else {
-            creator = "Sin aplicación de origen";
+        int pageCount;
+        long fileSize;
+        int imagesCount;
+        int imagesFontsCount;
+        String pageSize;
+        try (PDDocument document = Loader.loadPDF(pdfFile)) {
+            PDDocumentInformation info = document.getDocumentInformation();
+            name = pdfFile.getName();
+            if (info.getAuthor() != null) {
+                author = info.getAuthor();
+            } else {
+                author = "Sin autor";
+            }   if (info.getTitle() != null){
+                title = info.getTitle();
+            } else {
+                title = "Sin título";
+            }   if (info.getSubject() != null) {
+                subject = info.getSubject();
+            } else {
+                subject = "Sin asunto";
+            }   if (info.getKeywords() != null && !info.getKeywords().trim().isEmpty()) {
+                keywords = info.getKeywords();
+            } else {
+                keywords = "Sin palabras clave";
+            }   fileType = "PDF";
+            pdfVersion = document.getVersion();
+            if (info.getCreator() != null) {
+                creator = info.getCreator();
+            } else {
+                creator = "Sin aplicación de origen";
+            }   pageCount = document.getNumberOfPages();
+            fileSize = pdfFile.length();
+            imagesCount = countImagesInPDF(document);
+            imagesFontsCount = countImagesWithFonts(document, "Fuente");
+            pageSize = getPageSize(document);
         }
-        int pageCount = document.getNumberOfPages();
-        long fileSize = pdfFile.length();
-        int imagesCount = countImagesInPDF(document);
-        int imagesFontsCount = countImagesWithFonts(document, "Fuente");
-        String pageSize = getPageSize(document);
-
-        document.close();
 
         // Crea una instancia de PDFFileInfo con la información recopilada
         return new PDFFileInfo(pdfFile, name, author, fileSize, pageSize, pageCount, title, subject, keywords, fileType, pdfVersion, creator, imagesCount,imagesFontsCount);
     } catch (IOException e) {
-        e.printStackTrace();
+        e.printStackTrace(System.out);
         return null;
         }
     }
@@ -299,7 +300,7 @@ public class PDFFileMetadataReader {
             index = pdfText.toLowerCase().indexOf(wordToCount.toLowerCase(), index + 1);
         }
     } catch (IOException e) {
-        e.printStackTrace();
+        e.printStackTrace(System.out);
     }
 
     return count;
@@ -339,7 +340,7 @@ public class PDFFileMetadataReader {
         guardarInformacionEnCSV(pdfFiles);
         
     } catch (IOException e) {
-        e.printStackTrace();
+        e.printStackTrace(System.out);
     }
 }
 
@@ -367,7 +368,7 @@ public class PDFFileMetadataReader {
                 writer.write(line.toString() + "\n");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
     }
 
@@ -480,7 +481,7 @@ public class PDFFileMetadataReader {
         try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("pdfInfo.dat"))) {
             pdfFiles = (List<PDFFileInfo>) inputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
         return pdfFiles;
     }
