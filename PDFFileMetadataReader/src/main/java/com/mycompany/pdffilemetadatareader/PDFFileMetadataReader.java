@@ -376,32 +376,46 @@ public class PDFFileMetadataReader {
     private static void continuarMismaRuta() {
         List<PDFFileInfo> pdfFiles = cargarInformacionDesdeArchivo();
 
-        // Ordenar los archivos por autor y asunto
-        pdfFiles.sort(Comparator.comparing(PDFFileInfo::getAuthor, Comparator.nullsLast(Comparator.naturalOrder()))
-                .thenComparing(PDFFileInfo::getSubject, Comparator.nullsLast(Comparator.naturalOrder())));
-
         JFrame ventanaVistaArchivos = new JFrame("File view");
         ventanaVistaArchivos.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         ventanaVistaArchivos.setSize(900, 400);
         ventanaVistaArchivos.setResizable(false);
 
-        // Panel para mostrar los archivos PDF como botones
-        JPanel pdfButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        // Panel para mostrar los archivos PDF como botones en una cuadrícula
+        JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(5, 5, 5, 5); // Ajustar espacios
+
         for (PDFFileInfo fileInfo : pdfFiles) {
             JButton pdfButton = new JButton(fileInfo.getName() + "  |  Autor: " + fileInfo.getAuthor() + "  |  Asunto: " + fileInfo.getSubject());
-            pdfButton.setPreferredSize(new Dimension(800, 30));
+            pdfButton.setPreferredSize(new Dimension(700, 40));
             pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo));
-            pdfButtonPanel.add(pdfButton);
+            pdfButtonPanel.add(pdfButton, gbc);
+            gbc.gridy++;
         }
 
         // Panel para los botones de ordenar
         JPanel orderButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        orderButtonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10)); //Ajustar espacios
+
         JButton orderAuthorButton = new JButton("Ordenar por Autor");
         orderAuthorButton.setBackground(new Color(232, 36, 36));
+        orderAuthorButton.setPreferredSize(new Dimension(150, 30));
         orderAuthorButton.setForeground(Color.WHITE);
+        orderAuthorButton.setOpaque(true);
+        orderAuthorButton.setBorderPainted(false);
+        orderAuthorButton.setFocusPainted(false);
+
         JButton orderSubjectButton = new JButton("Ordenar por Asunto");
         orderSubjectButton.setBackground(new Color(232, 36, 36));
+        orderSubjectButton.setPreferredSize(new Dimension(150, 30));
         orderSubjectButton.setForeground(Color.WHITE);
+        orderSubjectButton.setOpaque(true);
+        orderSubjectButton.setBorderPainted(false);
+        orderSubjectButton.setFocusPainted(false);
+
         orderButtonPanel.add(orderAuthorButton);
         orderButtonPanel.add(orderSubjectButton);
 
@@ -419,16 +433,16 @@ public class PDFFileMetadataReader {
             actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
         });
 
-        // Panel principal que contiene los botones PDF y los botones de ordenar
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.add(pdfButtonPanel, BorderLayout.CENTER);
-        mainPanel.add(orderButtonPanel, BorderLayout.NORTH);
-        ventanaVistaArchivos.getContentPane().add(mainPanel);
+        JScrollPane scrollPane = new JScrollPane(pdfButtonPanel);
+        JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+        verticalScrollBar.setUnitIncrement(16); // Ajustar el valor de la velocidad
+
+        ventanaVistaArchivos.add(orderButtonPanel, BorderLayout.NORTH);
+        ventanaVistaArchivos.getContentPane().add(scrollPane);
 
         ventanaVistaArchivos.setLocationRelativeTo(null);
         ventanaVistaArchivos.setVisible(true);
     }
-
 
 
     private static List<PDFFileInfo> cargarInformacionDesdeArchivo() {
@@ -440,22 +454,31 @@ public class PDFFileMetadataReader {
         }
         return pdfFiles;
     }
+    
     private static void actualizarBotonesPDF(List<PDFFileInfo> pdfFiles, JPanel pdfButtonPanel) {
         pdfButtonPanel.removeAll();
-            for (PDFFileInfo fileInfo : pdfFiles) {
-                JButton pdfButton = new JButton(fileInfo.getName() + "  |  Autor: " + fileInfo.getAuthor() + "  |  Asunto: " + fileInfo.getSubject());
-                pdfButton.setPreferredSize(new Dimension(800, 30));
-                pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo));
-                pdfButtonPanel.add(pdfButton);
-            }
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        for (PDFFileInfo fileInfo : pdfFiles) {
+            JButton pdfButton = new JButton(fileInfo.getName() + "  |  Autor: " + fileInfo.getAuthor() + "  |  Asunto: " + fileInfo.getSubject());
+            pdfButton.setPreferredSize(new Dimension(700, 40));
+            pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo));
+            pdfButtonPanel.add(pdfButton, gbc);
+            gbc.gridy++; // Siguiente fila
+        }
+
         pdfButtonPanel.revalidate();
         pdfButtonPanel.repaint();
     }
 
     private static void mostrarInformacionPDF(PDFFileInfo fileInfo) {
-        // Aquí puedes mostrar la información del archivo seleccionado en otra ventana
-        // Puedes usar un JTextArea u otro componente para mostrar la información detallada.
         JTextArea infoTextArea = new JTextArea();
+        infoTextArea.setBackground(Color.WHITE);
+        infoTextArea.setForeground(Color.BLACK);
         infoTextArea.setEditable(false);
         infoTextArea.setText("Nombre: " + fileInfo.getName() + "\n"
                 + "Autor: " + fileInfo.getAuthor() + "\n"
@@ -472,7 +495,7 @@ public class PDFFileMetadataReader {
                 + "Cantidad de Imágenes en el Documento: " + fileInfo.getImagesCount() + "\n"
                 + "Cantidad de Fuentes de Imágenes Documento: " + fileInfo.getImagesFontsCount() + "\n" );
 
-        JFrame infoFrame = new JFrame("Información del Archivo");
+        JFrame infoFrame = new JFrame("File Information");
         infoFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         infoFrame.setSize(400, 300);
         infoFrame.setResizable(false);
