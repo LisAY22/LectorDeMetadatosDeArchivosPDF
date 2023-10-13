@@ -374,6 +374,7 @@ public class PDFFileMetadataReader {
 
     
     private static void continuarMismaRuta() {
+        List<PDFFileInfo> pdfFilesOriginal = cargarInformacionDesdeArchivo();
         List<PDFFileInfo> pdfFiles = cargarInformacionDesdeArchivo();
 
         JFrame ventanaVistaArchivos = new JFrame("File view");
@@ -415,9 +416,25 @@ public class PDFFileMetadataReader {
         orderSubjectButton.setOpaque(true);
         orderSubjectButton.setBorderPainted(false);
         orderSubjectButton.setFocusPainted(false);
+        
+        JButton orderNameButton = new JButton("Ordenar por Nombre");
+        orderNameButton.setBackground(new Color(232, 36, 36));
+        orderNameButton.setPreferredSize(new Dimension(150, 30));
+        orderNameButton.setForeground(Color.WHITE);
+        orderNameButton.setOpaque(true);
+        orderNameButton.setBorderPainted(false);
+        orderNameButton.setFocusPainted(false);
 
+        orderButtonPanel.add(orderNameButton);
         orderButtonPanel.add(orderAuthorButton);
         orderButtonPanel.add(orderSubjectButton);
+        
+        // Agregar acción para ordenar por nombre
+        orderNameButton.addActionListener(e -> {
+            pdfFiles.clear();
+            pdfFiles.addAll(pdfFilesOriginal); // Restaurar el orden original
+            actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+        });
 
         // Agregar acción para ordenar por autor
         orderAuthorButton.addActionListener(e -> {
