@@ -16,6 +16,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -373,61 +374,111 @@ public class PDFFileMetadataReader {
 
     
     private static void continuarMismaRuta() {
-    
-        JFrame ventanaVistaArchivos = new JFrame("File view");
-        ventanaVistaArchivos.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        ventanaVistaArchivos.setSize(500, 400);
-        ventanaVistaArchivos.setResizable(false);
-
-        // Crea un JTextArea para mostrar la información
-        JTextArea textArea = new JTextArea();
-        textArea.setEditable(false);
-
-        // Agrega el JTextArea a la ventana
-        JScrollPane scrollPane = new JScrollPane(textArea);
-
-
-        // Cargar la información desde el archivo
         List<PDFFileInfo> pdfFiles = cargarInformacionDesdeArchivo();
 
-        // Construir una cadena de texto con la información de los archivos PDF
-        StringBuilder infoText = new StringBuilder();
-            for (PDFFileInfo fileInfo : pdfFiles) {
-                infoText.append("Nombre: ").append(fileInfo.getName()).append(", ");
-                infoText.append("Autor: ").append(fileInfo.getAuthor()).append(", ");
-                infoText.append("Tamaño de Archivo: ").append(fileInfo.getFileSize()).append(" bytes, ");
-                infoText.append("Tamaño de Página: ").append(fileInfo.getPageSize()).append(", ");
-                infoText.append("Páginas: ").append(fileInfo.getPageCount()).append(", ");
-                infoText.append("Titulo: ").append(fileInfo.getTitle()).append(", ");
-                infoText.append("Asunto: ").append(fileInfo.getSubject()).append(", ");
-                infoText.append("Palabras Clave: ").append(fileInfo.getKeywords()).append(",  ");
-                infoText.append("Tipo de Archivo: ").append(fileInfo.getFileType()).append(", ");
-                infoText.append("Versión de PDF: ").append(fileInfo.getPdfVersion()).append(", ");
-                infoText.append("Aplicación por la que fue creada: ").append(fileInfo.getCreator()).append(", ");
-                infoText.append("Cantidad de Imágenes en el Documento: ").append(fileInfo.getImagesCount()).append(", ");
-                infoText.append("Cantidad de Fuentes de Imágenes Documento: ").append(fileInfo.getImagesFontsCount());
+        // Ordenar los archivos por autor y asunto
+        pdfFiles.sort(Comparator.comparing(PDFFileInfo::getAuthor, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(PDFFileInfo::getSubject, Comparator.nullsLast(Comparator.naturalOrder())));
 
-                infoText.append("\n"); // Agrega un salto de línea entre cada archivo
-            }
+        JFrame ventanaVistaArchivos = new JFrame("File view");
+        ventanaVistaArchivos.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        ventanaVistaArchivos.setSize(900, 400);
+        ventanaVistaArchivos.setResizable(false);
 
-        // Establece el texto en el JTextArea
-        textArea.setText("Información cargada desde el directorio:\n" + infoText.toString());
-        
-        ventanaVistaArchivos.getContentPane().add(scrollPane);
+        // Panel para mostrar los archivos PDF como botones
+        JPanel pdfButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        for (PDFFileInfo fileInfo : pdfFiles) {
+            JButton pdfButton = new JButton(fileInfo.getName() + "  |  Autor: " + fileInfo.getAuthor() + "  |  Asunto: " + fileInfo.getSubject());
+            pdfButton.setPreferredSize(new Dimension(800, 30));
+            pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo));
+            pdfButtonPanel.add(pdfButton);
+        }
+
+        // Panel para los botones de ordenar
+        JPanel orderButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton orderAuthorButton = new JButton("Ordenar por Autor");
+        orderAuthorButton.setBackground(new Color(232, 36, 36));
+        orderAuthorButton.setForeground(Color.WHITE);
+        JButton orderSubjectButton = new JButton("Ordenar por Asunto");
+        orderSubjectButton.setBackground(new Color(232, 36, 36));
+        orderSubjectButton.setForeground(Color.WHITE);
+        orderButtonPanel.add(orderAuthorButton);
+        orderButtonPanel.add(orderSubjectButton);
+
+        // Agregar acción para ordenar por autor
+        orderAuthorButton.addActionListener(e -> {
+            pdfFiles.sort(Comparator.comparing(PDFFileInfo::getAuthor, Comparator.nullsLast(Comparator.naturalOrder()))
+                    .thenComparing(PDFFileInfo::getSubject, Comparator.nullsLast(Comparator.naturalOrder())));
+            actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+        });
+
+        // Agregar acción para ordenar por asunto
+        orderSubjectButton.addActionListener(e -> {
+            pdfFiles.sort(Comparator.comparing(PDFFileInfo::getSubject, Comparator.nullsLast(Comparator.naturalOrder()))
+                    .thenComparing(PDFFileInfo::getAuthor, Comparator.nullsLast(Comparator.naturalOrder())));
+            actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+        });
+
+        // Panel principal que contiene los botones PDF y los botones de ordenar
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(pdfButtonPanel, BorderLayout.CENTER);
+        mainPanel.add(orderButtonPanel, BorderLayout.NORTH);
+        ventanaVistaArchivos.getContentPane().add(mainPanel);
+
         ventanaVistaArchivos.setLocationRelativeTo(null);
         ventanaVistaArchivos.setVisible(true);
+    }
+
+
+
+    private static List<PDFFileInfo> cargarInformacionDesdeArchivo() {
+        List<PDFFileInfo> pdfFiles = new ArrayList<>();
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("pdfInfo.dat"))) {
+            pdfFiles = (List<PDFFileInfo>) inputStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
         }
-
-
-        private static List<PDFFileInfo> cargarInformacionDesdeArchivo() {
-            List<PDFFileInfo> pdfFiles = new ArrayList<>();
-            try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("pdfInfo.dat"))) {
-                pdfFiles = (List<PDFFileInfo>) inputStream.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+        return pdfFiles;
+    }
+    private static void actualizarBotonesPDF(List<PDFFileInfo> pdfFiles, JPanel pdfButtonPanel) {
+        pdfButtonPanel.removeAll();
+            for (PDFFileInfo fileInfo : pdfFiles) {
+                JButton pdfButton = new JButton(fileInfo.getName() + "  |  Autor: " + fileInfo.getAuthor() + "  |  Asunto: " + fileInfo.getSubject());
+                pdfButton.setPreferredSize(new Dimension(800, 30));
+                pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo));
+                pdfButtonPanel.add(pdfButton);
             }
-            return pdfFiles;
-        }
+        pdfButtonPanel.revalidate();
+        pdfButtonPanel.repaint();
+    }
 
-    
+    private static void mostrarInformacionPDF(PDFFileInfo fileInfo) {
+        // Aquí puedes mostrar la información del archivo seleccionado en otra ventana
+        // Puedes usar un JTextArea u otro componente para mostrar la información detallada.
+        JTextArea infoTextArea = new JTextArea();
+        infoTextArea.setEditable(false);
+        infoTextArea.setText("Nombre: " + fileInfo.getName() + "\n"
+                + "Autor: " + fileInfo.getAuthor() + "\n"
+                + "Asunto: " + fileInfo.getSubject() + "\n"
+                + "Tamaño de Archivo: " + fileInfo.getFileSize() + " bytes\n"
+                + "Tamaño de Página: " + fileInfo.getPageSize() + "\n"
+                + "Páginas: " + fileInfo.getPageCount() + "\n"
+                + "Titulo: " + fileInfo.getTitle() + "\n"
+                + "Asunto: " + fileInfo.getSubject() + "\n"
+                + "Palabras Clave: " + fileInfo.getKeywords() + "\n"
+                + "Tipo de Archivo: " + fileInfo.getFileType() + "\n"
+                + "Versión de PDF: " + fileInfo.getPdfVersion() + "\n"
+                + "Aplicación por la que fue creada: " + fileInfo.getCreator() + "\n"
+                + "Cantidad de Imágenes en el Documento: " + fileInfo.getImagesCount() + "\n"
+                + "Cantidad de Fuentes de Imágenes Documento: " + fileInfo.getImagesFontsCount() + "\n" );
+
+        JFrame infoFrame = new JFrame("Información del Archivo");
+        infoFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        infoFrame.setSize(400, 300);
+        infoFrame.setResizable(false);
+        infoFrame.getContentPane().add(new JScrollPane(infoTextArea));
+        infoFrame.setLocationRelativeTo(null);
+        infoFrame.setVisible(true);
+    }
+
 }
