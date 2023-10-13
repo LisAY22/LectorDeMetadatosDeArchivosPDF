@@ -374,34 +374,39 @@ public class PDFFileMetadataReader {
 
     
     private static void continuarMismaRuta() {
+        // Cargar información de archivos PDF desde un archivo
         List<PDFFileInfo> pdfFilesOriginal = cargarInformacionDesdeArchivo();
-        List<PDFFileInfo> pdfFiles = cargarInformacionDesdeArchivo();
+        List<PDFFileInfo> pdfFiles = cargarInformacionDesdeArchivo(); // Hacer una copia de la lista original
 
+        // Crear una ventana para mostrar los archivos PDF
         JFrame ventanaVistaArchivos = new JFrame("File view");
-        ventanaVistaArchivos.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        ventanaVistaArchivos.setSize(900, 400);
-        ventanaVistaArchivos.setResizable(false);
+        ventanaVistaArchivos.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Configurar el comportamiento de cierre
+        ventanaVistaArchivos.setSize(900, 400); // Configurar tamaño de la ventana
+        ventanaVistaArchivos.setResizable(false); // Evitar que la ventana sea redimensionable
 
         // Panel para mostrar los archivos PDF como botones en una cuadrícula
-        JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
+        JPanel pdfButtonPanel = new JPanel(new GridBagLayout()); // Usar GridBagLayout para organizar los botones
+        GridBagConstraints gbc = new GridBagConstraints(); // Configuración del GridBagLayout
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.insets = new Insets(5, 5, 5, 5); // Ajustar espacios
+        gbc.insets = new Insets(5, 5, 5, 5); // Ajustar espacios entre los botones
 
+        // Crear botones para cada archivo PDF y agregarlos al panel
         for (PDFFileInfo fileInfo : pdfFiles) {
             JButton pdfButton = new JButton(fileInfo.getName() + "  |  Autor: " + fileInfo.getAuthor() + "  |  Asunto: " + fileInfo.getSubject());
-            pdfButton.setPreferredSize(new Dimension(700, 40));
-            pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo));
-            pdfButtonPanel.add(pdfButton, gbc);
-            gbc.gridy++;
+            pdfButton.setPreferredSize(new Dimension(700, 40)); // Configurar el tamaño del botón
+            pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo)); // Agregar acción al hacer clic en el botón
+            pdfButtonPanel.add(pdfButton, gbc); // Agregar botón al panel
+            gbc.gridy++; // Cambiar de fila en el grid
         }
 
         // Panel para los botones de ordenar
-        JPanel orderButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        orderButtonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10)); //Ajustar espacios
+        JPanel orderButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT)); // Usar FlowLayout para organizar los botones de ordenar
+        orderButtonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10)); // Ajustar espacios alrededor del panel
 
+        // Crear botones para ordenar por nombre, autor y asunto, y agregarlos al panel
         JButton orderAuthorButton = new JButton("Ordenar por Autor");
+        // Configurar apariencia del botón
         orderAuthorButton.setBackground(new Color(232, 36, 36));
         orderAuthorButton.setPreferredSize(new Dimension(150, 30));
         orderAuthorButton.setForeground(Color.WHITE);
@@ -410,14 +415,16 @@ public class PDFFileMetadataReader {
         orderAuthorButton.setFocusPainted(false);
 
         JButton orderSubjectButton = new JButton("Ordenar por Asunto");
+        // Configurar apariencia del botón
         orderSubjectButton.setBackground(new Color(232, 36, 36));
         orderSubjectButton.setPreferredSize(new Dimension(150, 30));
         orderSubjectButton.setForeground(Color.WHITE);
         orderSubjectButton.setOpaque(true);
         orderSubjectButton.setBorderPainted(false);
         orderSubjectButton.setFocusPainted(false);
-        
+
         JButton orderNameButton = new JButton("Ordenar por Nombre");
+        // Configurar apariencia del botón
         orderNameButton.setBackground(new Color(232, 36, 36));
         orderNameButton.setPreferredSize(new Dimension(150, 30));
         orderNameButton.setForeground(Color.WHITE);
@@ -425,41 +432,47 @@ public class PDFFileMetadataReader {
         orderNameButton.setBorderPainted(false);
         orderNameButton.setFocusPainted(false);
 
+        // Agregar botones al panel de botones de ordenar
         orderButtonPanel.add(orderNameButton);
         orderButtonPanel.add(orderAuthorButton);
         orderButtonPanel.add(orderSubjectButton);
-        
-        // Agregar acción para ordenar por nombre
+
+        // Agregar acciones para los botones de ordenar
+        // Acción para ordenar por nombre
         orderNameButton.addActionListener(e -> {
             pdfFiles.clear();
             pdfFiles.addAll(pdfFilesOriginal); // Restaurar el orden original
-            actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+            actualizarBotonesPDF(pdfFiles, pdfButtonPanel); // Actualizar los botones en la interfaz gráfica
         });
 
-        // Agregar acción para ordenar por autor
+        // Acción para ordenar por autor
         orderAuthorButton.addActionListener(e -> {
             pdfFiles.sort(Comparator.comparing(PDFFileInfo::getAuthor, Comparator.nullsLast(Comparator.naturalOrder()))
                     .thenComparing(PDFFileInfo::getSubject, Comparator.nullsLast(Comparator.naturalOrder())));
-            actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+            actualizarBotonesPDF(pdfFiles, pdfButtonPanel); // Actualizar los botones en la interfaz gráfica
         });
 
-        // Agregar acción para ordenar por asunto
+        // Acción para ordenar por asunto
         orderSubjectButton.addActionListener(e -> {
             pdfFiles.sort(Comparator.comparing(PDFFileInfo::getSubject, Comparator.nullsLast(Comparator.naturalOrder()))
                     .thenComparing(PDFFileInfo::getAuthor, Comparator.nullsLast(Comparator.naturalOrder())));
-            actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+            actualizarBotonesPDF(pdfFiles, pdfButtonPanel); // Actualizar los botones en la interfaz gráfica
         });
 
-        JScrollPane scrollPane = new JScrollPane(pdfButtonPanel);
+        // Configurar barra de desplazamiento para el panel de botones
+        JScrollPane scrollPane = new JScrollPane(pdfButtonPanel); // Agregar panel de botones a un JScrollPane
         JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
-        verticalScrollBar.setUnitIncrement(16); // Ajustar el valor de la velocidad
+        verticalScrollBar.setUnitIncrement(16); // Ajustar el valor de la velocidad de desplazamiento
 
-        ventanaVistaArchivos.add(orderButtonPanel, BorderLayout.NORTH);
-        ventanaVistaArchivos.getContentPane().add(scrollPane);
+        // Agregar paneles a la ventana principal
+        ventanaVistaArchivos.add(orderButtonPanel, BorderLayout.NORTH); // Agregar panel de botones de ordenar en la parte superior
+        ventanaVistaArchivos.getContentPane().add(scrollPane); // Agregar panel de botones de archivos PDF con barra de desplazamiento
 
-        ventanaVistaArchivos.setLocationRelativeTo(null);
-        ventanaVistaArchivos.setVisible(true);
+        // Configurar posición y visibilidad de la ventana principal
+        ventanaVistaArchivos.setLocationRelativeTo(null); // Centrar la ventana en la pantalla
+        ventanaVistaArchivos.setVisible(true); // Hacer la ventana visible
     }
+
 
 
     private static List<PDFFileInfo> cargarInformacionDesdeArchivo() {
@@ -473,33 +486,38 @@ public class PDFFileMetadataReader {
     }
     
     private static void actualizarBotonesPDF(List<PDFFileInfo> pdfFiles, JPanel pdfButtonPanel) {
+        // Limpiar todos los botones existentes en el panel
         pdfButtonPanel.removeAll();
 
+        // Configurar la disposición de los nuevos botones
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(5, 5, 5, 5); // Ajustar espacios entre los botones
 
+        // Crear y agregar nuevos botones para cada archivo PDF en la lista
         for (PDFFileInfo fileInfo : pdfFiles) {
+            // Crear un botón con el nombre, autor y asunto del archivo PDF
             JButton pdfButton = new JButton(fileInfo.getName() + "  |  Autor: " + fileInfo.getAuthor() + "  |  Asunto: " + fileInfo.getSubject());
-            pdfButton.setPreferredSize(new Dimension(700, 40));
-            pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo));
-            pdfButtonPanel.add(pdfButton, gbc);
-            gbc.gridy++; // Siguiente fila
+            pdfButton.setPreferredSize(new Dimension(700, 40)); // Configurar el tamaño del botón
+            pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo)); // Agregar acción al hacer clic en el botón
+            pdfButtonPanel.add(pdfButton, gbc); // Agregar botón al panel
+            gbc.gridy++; // Moverse a la siguiente fila en el grid
         }
 
+        // Validar y repintar el panel para reflejar los cambios
         pdfButtonPanel.revalidate();
         pdfButtonPanel.repaint();
     }
 
     private static void mostrarInformacionPDF(PDFFileInfo fileInfo) {
+        // Crear un área de texto para mostrar la información
         JTextArea infoTextArea = new JTextArea();
-//        infoTextArea.setBackground(Color.WHITE);
-//        infoTextArea.setForeground(Color.BLACK);
-        infoTextArea.setEditable(false);
-        infoTextArea.setFont(new Font("Arial", Font.PLAIN, 14));
-        infoTextArea.setMargin(new Insets(10, 10, 10, 10));
+        infoTextArea.setEditable(false); // Hacer el área de texto no editable
+        infoTextArea.setFont(new Font("Arial", Font.PLAIN, 14)); // Configurar la fuente y tamaño del texto
+        infoTextArea.setMargin(new Insets(10, 10, 10, 10)); // Configurar los márgenes del área de texto
 
+        // Configurar el texto con la información del archivo PDF
         infoTextArea.setText("Nombre: " + fileInfo.getName() + "\n"
                 + "Autor: " + fileInfo.getAuthor() + "\n"
                 + "Asunto: " + fileInfo.getSubject() + "\n\n"
@@ -515,14 +533,14 @@ public class PDFFileMetadataReader {
                 + "   - Cantidad de Fuentes de Imágenes: " + fileInfo.getImagesFontsCount() + "\n\n"
                 + "Palabras Clave: " + fileInfo.getKeywords());
 
+        // Crear una nueva ventana para mostrar la información
         JFrame infoFrame = new JFrame("File Information");
-        infoFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        infoFrame.setSize(400, 300);
-        infoFrame.setResizable(false);
-        infoFrame.getContentPane().add(new JScrollPane(infoTextArea));
-        infoFrame.setLocationRelativeTo(null);
-        infoFrame.setVisible(true);
-
+        infoFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Configurar el comportamiento de cierre
+        infoFrame.setSize(400, 300); // Configurar tamaño de la ventana
+        infoFrame.setResizable(false); // Evitar que la ventana sea redimensionable
+        infoFrame.getContentPane().add(new JScrollPane(infoTextArea)); // Agregar el área de texto con barra de desplazamiento
+        infoFrame.setLocationRelativeTo(null); // Centrar la ventana en la pantalla
+        infoFrame.setVisible(true); // Hacer la ventana visible
     }
 
 }
