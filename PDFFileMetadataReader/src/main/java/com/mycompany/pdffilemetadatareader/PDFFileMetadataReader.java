@@ -396,7 +396,7 @@ public class PDFFileMetadataReader {
         for (PDFFileInfo fileInfo : pdfFiles) {
             JButton pdfButton = new JButton(fileInfo.getName() + "  |  Autor: " + fileInfo.getAuthor() + "  |  Asunto: " + fileInfo.getSubject());
             pdfButton.setPreferredSize(new Dimension(700, 40)); // Configurar el tamaño del botón
-            pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo)); // Agregar acción al hacer clic en el botón
+            pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo, pdfFiles)); // Agregar acción al hacer clic en el botón
             pdfButtonPanel.add(pdfButton, gbc); // Agregar botón al panel
             gbc.gridy++; // Cambiar de fila en el grid
         }
@@ -501,7 +501,7 @@ public class PDFFileMetadataReader {
             // Crear un botón con el nombre, autor y asunto del archivo PDF
             JButton pdfButton = new JButton(fileInfo.getName() + "  |  Autor: " + fileInfo.getAuthor() + "  |  Asunto: " + fileInfo.getSubject());
             pdfButton.setPreferredSize(new Dimension(700, 40)); // Configurar el tamaño del botón
-            pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo)); // Agregar acción al hacer clic en el botón
+            pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo, pdfFiles)); // Agregar acción al hacer clic en el botón
             pdfButtonPanel.add(pdfButton, gbc); // Agregar botón al panel
             gbc.gridy++; // Moverse a la siguiente fila en el grid
         }
@@ -511,7 +511,7 @@ public class PDFFileMetadataReader {
         pdfButtonPanel.repaint();
     }
 
-    private static void mostrarInformacionPDF(PDFFileInfo fileInfo) {
+    private static void mostrarInformacionPDF(PDFFileInfo fileInfo, List<PDFFileInfo> pdfFiles) {
         // Crear una nueva ventana para mostrar la información
         JFrame infoFrame = new JFrame("File Information");
         infoFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -545,6 +545,11 @@ public class PDFFileMetadataReader {
             if (nuevoTitulo != null) {
                 fileInfo.setTitle(nuevoTitulo);
                 tituloButton.setText("Titulo: " + fileInfo.getTitle());
+                // Guardar la información actualizada en los archivos
+                guardarInformacionEnArchivo(pdfFiles);
+                JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
+                // Actualizar la interfaz gráfica para reflejar los cambios
+                actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
             }
         });
         
