@@ -515,16 +515,20 @@ public class PDFFileMetadataReader {
         // Crear una nueva ventana para mostrar la información
         JFrame infoFrame = new JFrame("File Information");
         infoFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        infoFrame.setSize(400, 300);
+        infoFrame.setSize(500, 300);
         infoFrame.setResizable(false);
         infoFrame.setLocationRelativeTo(null);
 
         // Crear un panel para contener los botones
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
+        buttonPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(5, 0, 5, 0);
         
         JButton nombreButton = new JButton("Nombre: " + fileInfo.getName());
-        nombreButton.setPreferredSize(new Dimension(350, 30));
+        nombreButton.setPreferredSize(new Dimension(400, 30));
         nombreButton.addActionListener(e -> {
             String nuevoNombre = JOptionPane.showInputDialog(infoFrame, "Editar Nombre", fileInfo.getName());
             if (nuevoNombre != null) {
@@ -534,8 +538,18 @@ public class PDFFileMetadataReader {
             }
         });
         
+        JButton tituloButton = new JButton("Titulo: " + fileInfo.getTitle());
+        tituloButton.setPreferredSize(new Dimension(400, 30));
+        tituloButton.addActionListener(e -> {
+            String nuevoTitulo = JOptionPane.showInputDialog(infoFrame, "Editar Titulo", fileInfo.getTitle());
+            if (nuevoTitulo != null) {
+                fileInfo.setTitle(nuevoTitulo);
+                tituloButton.setText("Titulo: " + fileInfo.getTitle());
+            }
+        });
+        
         JButton autorButton = new JButton("Autor: " + fileInfo.getAuthor());
-        autorButton.setPreferredSize(new Dimension(350, 30));
+        autorButton.setPreferredSize(new Dimension(400, 30));
         autorButton.addActionListener(e -> {
             String nuevoAutor = JOptionPane.showInputDialog(infoFrame, "Editar Autor", fileInfo.getAuthor());
             if (nuevoAutor != null) {
@@ -545,7 +559,7 @@ public class PDFFileMetadataReader {
         });
 
         JButton asuntoButton = new JButton("Asunto: " + fileInfo.getSubject());
-        asuntoButton.setPreferredSize(new Dimension(350, 30));
+        asuntoButton.setPreferredSize(new Dimension(400, 30));
         asuntoButton.addActionListener(e -> {
             String nuevoAsunto = JOptionPane.showInputDialog(infoFrame, "Editar Asunto", fileInfo.getSubject());
             if (nuevoAsunto != null) {
@@ -553,114 +567,9 @@ public class PDFFileMetadataReader {
                 asuntoButton.setText("Asunto: " + fileInfo.getSubject());
             }
         });
-
-        JButton tamañoArchivoButton = new JButton("Tamaño del Archivo: " + fileInfo.getFileSize() + " bytes");
-        tamañoArchivoButton.setPreferredSize(new Dimension(350, 30));
-        tamañoArchivoButton.addActionListener(e -> {
-            String nuevoTamaño = JOptionPane.showInputDialog(infoFrame, "Editar Tamaño del Archivo", String.valueOf(fileInfo.getFileSize()));
-            if (nuevoTamaño != null) {
-                try {
-                    long nuevoTamañoLong = Long.parseLong(nuevoTamaño);
-                    fileInfo.setFileSize(nuevoTamañoLong);
-                    tamañoArchivoButton.setText("Tamaño del Archivo: " + fileInfo.getFileSize() + " bytes");
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(infoFrame, "El valor ingresado no es válido.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
         
-        JButton tamañoPaginaButton = new JButton("Tamaño de Página: " + fileInfo.getPageSize());
-        tamañoPaginaButton.setPreferredSize(new Dimension(350, 30));
-        tamañoPaginaButton.addActionListener(e -> {
-            String nuevoTamañoPagina = JOptionPane.showInputDialog(infoFrame, "Editar Tamaño de Página", fileInfo.getPageSize());
-            if (nuevoTamañoPagina != null) {
-                fileInfo.setPagesSize(nuevoTamañoPagina);
-                tamañoPaginaButton.setText("Tamaño de Página: " + fileInfo.getPageSize());
-            }
-        });
-
-        JButton numPaginasButton = new JButton("Número de Páginas: " + fileInfo.getPageCount());
-        numPaginasButton.setPreferredSize(new Dimension(350, 30));
-        numPaginasButton.addActionListener(e -> {
-            String nuevoNumPaginas = JOptionPane.showInputDialog(infoFrame, "Editar Número de Páginas", String.valueOf(fileInfo.getPageCount()));
-            if (nuevoNumPaginas != null) {
-                try {
-                    int nuevoNumPaginasInt = Integer.parseInt(nuevoNumPaginas);
-                    fileInfo.setPageCount(nuevoNumPaginasInt);
-                    numPaginasButton.setText("Número de Páginas: " + fileInfo.getPageCount());
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(infoFrame, "El valor ingresado no es válido.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
-        JButton versionButton = new JButton("Versión: " + fileInfo.getPdfVersion());
-        versionButton.setPreferredSize(new Dimension(350, 30));
-        versionButton.addActionListener(e -> {
-            String nuevaVersion = JOptionPane.showInputDialog(infoFrame, "Editar Versión", String.valueOf(fileInfo.getPdfVersion()));
-            if (nuevaVersion != null) {
-                try {
-                    float nuevaVersionFloat = Float.parseFloat(nuevaVersion);
-                    fileInfo.setPdfVersion(nuevaVersionFloat);
-                    versionButton.setText("Versión: " + fileInfo.getPdfVersion());
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(infoFrame, "El valor ingresado no es válido.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
-        JButton tipoArchivoButton = new JButton("Tipo de Archivo: " + fileInfo.getFileType());
-        tipoArchivoButton.setPreferredSize(new Dimension(350, 30));
-        tipoArchivoButton.addActionListener(e -> {
-            String nuevoTipoArchivo = JOptionPane.showInputDialog(infoFrame, "Editar Tipo de Archivo", fileInfo.getFileType());
-            if (nuevoTipoArchivo != null) {
-                fileInfo.setFileType(nuevoTipoArchivo);
-                tipoArchivoButton.setText("Tipo de Archivo: " + fileInfo.getFileType());
-            }
-        });
-
-        JButton creadorButton = new JButton("Creador: " + fileInfo.getCreator());
-        creadorButton.setPreferredSize(new Dimension(350, 30));
-        creadorButton.addActionListener(e -> {
-            String nuevoCreador = JOptionPane.showInputDialog(infoFrame, "Editar Creador", fileInfo.getCreator());
-            if (nuevoCreador != null) {
-                fileInfo.setCreator(nuevoCreador);
-                creadorButton.setText("Creador: " + fileInfo.getCreator());
-            }
-        });
-        
-        JButton imagenesButton = new JButton("Cantidad de Imágenes: " + fileInfo.getImagesCount());
-        imagenesButton.setPreferredSize(new Dimension(350, 30));
-        imagenesButton.addActionListener(e -> {
-            String nuevaCantidadImagenes = JOptionPane.showInputDialog(infoFrame, "Editar Cantidad de Imágenes", String.valueOf(fileInfo.getImagesCount()));
-            if (nuevaCantidadImagenes != null) {
-                try {
-                    int nuevaCantidadImagenesInt = Integer.parseInt(nuevaCantidadImagenes);
-                    fileInfo.setImagesCount(nuevaCantidadImagenesInt);
-                    imagenesButton.setText("Cantidad de Imágenes: " + fileInfo.getImagesCount());
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(infoFrame, "El valor ingresado no es válido.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
-        JButton imagenesFuentesButton = new JButton("Cantidad de Fuentes de Imágenes: " + fileInfo.getImagesFontsCount());
-        imagenesFuentesButton.setPreferredSize(new Dimension(350, 30));
-        imagenesFuentesButton.addActionListener(e -> {
-            String nuevaCantidadImagenesFuentes = JOptionPane.showInputDialog(infoFrame, "Editar Cantidad de Fuentes de Imágenes", String.valueOf(fileInfo.getImagesFontsCount()));
-            if (nuevaCantidadImagenesFuentes != null) {
-                try {
-                    int nuevaCantidadImagenesFuentesInt = Integer.parseInt(nuevaCantidadImagenesFuentes);
-                    fileInfo.setImagesFontsCount(nuevaCantidadImagenesFuentesInt);
-                    imagenesFuentesButton.setText("Cantidad de Fuentes de Imágenes: " + fileInfo.getImagesFontsCount());
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(infoFrame, "El valor ingresado no es válido.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
         JButton palabrasClaveButton = new JButton("Palabras Clave: " + fileInfo.getKeywords());
-        palabrasClaveButton.setPreferredSize(new Dimension(350, 30));
+        palabrasClaveButton.setPreferredSize(new Dimension(400, 30));
         palabrasClaveButton.addActionListener(e -> {
             String nuevasPalabrasClave = JOptionPane.showInputDialog(infoFrame, "Editar Palabras Clave", fileInfo.getKeywords());
             if (nuevasPalabrasClave != null) {
@@ -669,26 +578,47 @@ public class PDFFileMetadataReader {
             }
         });
 
+        JLabel tamañoArchivoLabel = new JLabel("Tamaño del Archivo: " + fileInfo.getFileSize() + " bytes");
+        tamañoArchivoLabel.setPreferredSize(new Dimension(400, 30));
+        
+        JLabel tamañoPaginaLabel = new JLabel("Tamaño de Página: " + fileInfo.getPageSize());
+        tamañoPaginaLabel.setPreferredSize(new Dimension(400, 30));
 
-        // Agregar los botones al panel
-        buttonPanel.add(nombreButton);
-        buttonPanel.add(autorButton);
-        buttonPanel.add(asuntoButton);
-        buttonPanel.add(tamañoArchivoButton);
-        buttonPanel.add(tamañoPaginaButton);
-        buttonPanel.add(numPaginasButton);
-        buttonPanel.add(versionButton);
-        buttonPanel.add(tipoArchivoButton);
-        buttonPanel.add(creadorButton);
-        buttonPanel.add(imagenesButton);
-        buttonPanel.add(imagenesFuentesButton);
-        buttonPanel.add(palabrasClaveButton);
+        JLabel numPaginasLabel = new JLabel("Número de Páginas: " + fileInfo.getPageCount());
+        numPaginasLabel.setPreferredSize(new Dimension(400, 30));
 
+        JLabel versionLabel = new JLabel ("Versión: " + fileInfo.getPdfVersion());
+        versionLabel.setPreferredSize(new Dimension(400, 30));
+
+        JLabel tipoArchivoLabel = new JLabel("Tipo de Archivo: " + fileInfo.getFileType());
+        tipoArchivoLabel.setPreferredSize(new Dimension(400, 30));
+        
+        JLabel creadorLabel = new JLabel("Aplicación con la que fue Creada: " + fileInfo.getCreator());
+        creadorLabel.setPreferredSize(new Dimension(400, 30));
+        
+        JLabel imagenesLabel = new JLabel("Cantidad de Imágenes: " + fileInfo.getImagesCount());
+        imagenesLabel.setPreferredSize(new Dimension(400, 30));
+
+        JLabel imagenesFuentesLabel = new JLabel("Cantidad de Fuentes de Imágenes: " + fileInfo.getImagesFontsCount());
+        imagenesFuentesLabel.setPreferredSize(new Dimension(400, 30));
+
+        buttonPanel.add(nombreButton, gbc);
+        buttonPanel.add(tituloButton, gbc);
+        buttonPanel.add(autorButton, gbc);
+        buttonPanel.add(asuntoButton, gbc);
+        buttonPanel.add(palabrasClaveButton, gbc);
+        buttonPanel.add(tamañoArchivoLabel, gbc);
+        buttonPanel.add(tamañoPaginaLabel, gbc);
+        buttonPanel.add(numPaginasLabel, gbc);
+        buttonPanel.add(tipoArchivoLabel, gbc);
+        buttonPanel.add(versionLabel, gbc);
+        buttonPanel.add(creadorLabel, gbc);
+        buttonPanel.add(imagenesLabel, gbc);
+        buttonPanel.add(imagenesFuentesLabel, gbc);
+    
         // Crear el JScrollPane y agregar el panel de botones
         JScrollPane scrollPane = new JScrollPane(buttonPanel);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-
-        // Configurar el JScrollPane
         scrollPane.setPreferredSize(new Dimension(400, 150));
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
