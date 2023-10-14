@@ -1,33 +1,17 @@
 package com.mycompany.pdffilemetadatareader;
 
+
 import com.formdev.flatlaf.FlatDarkLaf;
-
-import java.text.DecimalFormat;
-
 import javax.swing.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.*;
-import java.io.FileOutputStream;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
-
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocumentInformation;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDResources;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.text.PDFTextStripper;
 
 
 public class PDFFileMetadataReader {
@@ -169,212 +153,14 @@ public class PDFFileMetadataReader {
         // Obtener la carpeta seleccionada por el usuario
         File selectedFolder = fileChooser.getSelectedFile();
         // Buscar archivos PDF dentro de la carpeta y sus subcarpetas, usando la función buscarArchivosPDF
-        List<PDFFileInfo> pdfFiles = buscarArchivosPDF(selectedFolder);
+        List<PDFFileInfo> pdfFiles = PDFObtainInfo.buscarArchivosPDF(selectedFolder);
         // Guardar la información de los archivos PDF en un archivo, usando la función guardarInformacionEnArchivo
-        guardarInformacionEnArchivo(pdfFiles);
+        PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
         // Mostrar un mensaje al usuario para indicar que la búsqueda se ha completado y los datos se han guardado
         JOptionPane.showMessageDialog(null, "Búsqueda completada y datos guardados.");
     }
     }
-
     
-    private static List<PDFFileInfo> buscarArchivosPDF(File folder) {
-    List<PDFFileInfo> pdfFiles = new ArrayList<>();
-    // Llama a la función recursiva para buscar archivos PDF dentro de la carpeta y sus subcarpetas
-    buscarArchivosPDFRecursivamente(folder, pdfFiles);
-    return pdfFiles;
-}
-
-    
-    private static void buscarArchivosPDFRecursivamente(File folder, List<PDFFileInfo> pdfFiles) {
-        if (folder.isDirectory()) {
-            File[] files = folder.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        // Si el elemento es una carpeta, llama recursivamente a esta función
-                        buscarArchivosPDFRecursivamente(file, pdfFiles);
-                    } else if (file.isFile() && file.getName().toLowerCase().endsWith(".pdf")) {
-                        // Si el elemento es un archivo PDF, obtiene su información utilizando la función obtenerInformacionPDF()
-                        PDFFileInfo fileInfo = obtenerInformacionPDF(file);
-
-                        // Verifica si la información no es nula antes de agregarla a la lista de archivos PDF encontrados
-                        if (fileInfo != null) {
-                            pdfFiles.add(fileInfo);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    
-    private static PDFFileInfo obtenerInformacionPDF(File pdfFile) {
-    try {
-        String name;
-        String author;
-        String title;
-        String subject;
-        String keywords;
-        String fileType;
-        float pdfVersion;
-        String creator;
-        int pageCount;
-        long fileSize;
-        int imagesCount;
-        int imagesFontsCount;
-        String pageSize;
-        try (PDDocument document = Loader.loadPDF(pdfFile)) {
-            PDDocumentInformation info = document.getDocumentInformation();
-            name = pdfFile.getName();
-            if (info.getAuthor() != null) {
-                author = info.getAuthor();
-            } else {
-                author = "Sin autor";
-            }   if (info.getTitle() != null){
-                title = info.getTitle();
-            } else {
-                title = "Sin título";
-            }   if (info.getSubject() != null) {
-                subject = info.getSubject();
-            } else {
-                subject = "Sin asunto";
-            }   if (info.getKeywords() != null && !info.getKeywords().trim().isEmpty()) {
-                keywords = info.getKeywords();
-            } else {
-                keywords = "Sin palabras clave";
-            }   fileType = "PDF";
-            pdfVersion = document.getVersion();
-            if (info.getCreator() != null) {
-                creator = info.getCreator();
-            } else {
-                creator = "Sin aplicación de origen";
-            }   pageCount = document.getNumberOfPages();
-            fileSize = pdfFile.length();
-            imagesCount = countImagesInPDF(document);
-            imagesFontsCount = countImagesWithFonts(document, "Fuente");
-            pageSize = getPageSize(document);
-        }
-
-        // Crea una instancia de PDFFileInfo con la información recopilada
-        return new PDFFileInfo(pdfFile, name, author, fileSize, pageSize, pageCount, title, subject, keywords, fileType, pdfVersion, creator, imagesCount,imagesFontsCount);
-    } catch (IOException e) {
-        e.printStackTrace(System.out);
-        return null;
-        }
-    }
-    
-    
-    private static int countImagesInPDF(PDDocument document) {
-    int count = 0;
-
-    for (int pageNumber = 0; pageNumber < document.getNumberOfPages(); pageNumber++) {
-        PDPage page = document.getPage(pageNumber);
-        PDResources resources = page.getResources();
-        Iterable<COSName> xObjectNames = resources.getXObjectNames();
-
-        for (COSName xObjectName : xObjectNames) {
-            if (resources.isImageXObject(xObjectName)) {
-                // El recurso XObject es una imagen, incrementa el contador de imágenes.
-                count++;
-            } else {
-                // El recurso XObject no es una imagen, puede ser una gráfica u otro elemento.
-                count++; // Incrementa el contador de gráficas (o recursos no reconocidos como imágenes).
-            }
-        }
-    }
-
-    return count;
-    }
-    
-    
-    private static int countImagesWithFonts(PDDocument document, String wordToCount) {
-    int count = 0;
-
-    try {
-        PDFTextStripper stripper = new PDFTextStripper();
-        String pdfText = stripper.getText(document);
-
-        // Contar las ocurrencias de la palabra en el texto del PDF
-        int index = pdfText.toLowerCase().indexOf(wordToCount.toLowerCase());
-        while (index != -1) {
-            count++;
-            index = pdfText.toLowerCase().indexOf(wordToCount.toLowerCase(), index + 1);
-        }
-    } catch (IOException e) {
-        e.printStackTrace(System.out);
-    }
-
-    return count;
-}
-
-    
-    private static String getPageSize(PDDocument file) {
-    // Crea un objeto DecimalFormat para formatear los valores de tamaño de página
-    DecimalFormat df = new DecimalFormat("###.#"); 
-    // Obtiene la primera página del documento
-    PDPage page = file.getPage(0);
-    String pageSize;
-    // Obtiene el rectángulo de medios (mediaBox) de la página
-    PDRectangle mediaBox = page.getMediaBox();
-    // Calcula el ancho y el alto de la página en pulgadas (dividiendo por 72 puntos por pulgada)
-    double width = mediaBox.getWidth() / 72;
-    double height = mediaBox.getHeight() / 72;
-    // Compara el ancho y el alto con tamaños de página estándar para determinar el tipo de página
-    if (((Objects.equals(df.format(width), "8.5")) || ((Objects.equals(df.format(height), "11.0"))))) {
-        pageSize = "Carta";
-    } else if (((Objects.equals(df.format(width), "8.3")) || ((Objects.equals(df.format(height), "11.8"))))) {
-        pageSize = "Oficio";
-    } else {
-        // Si no coincide con ningún tamaño estándar, se muestra el ancho y el alto en pulgadas
-        pageSize = df.format(width) + " x " + df.format(height);
-    }  
-    // Devuelve el tamaño de la página como una cadena de texto
-    return pageSize;
-    }
-
-    
-    private static void guardarInformacionEnArchivo(List<PDFFileInfo> pdfFiles) {
-    try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("pdfInfo.dat"))) {
-        outputStream.writeObject(pdfFiles);
-        
-        // Guardar la información en un archivo CSV
-        guardarInformacionEnCSV(pdfFiles);
-        
-    } catch (IOException e) {
-        e.printStackTrace(System.out);
-    }
-}
-
-    
-    private static void guardarInformacionEnCSV(List<PDFFileInfo> pdfFiles) {
-        try (FileWriter writer = new FileWriter(csvFileName)) {
-            // Escribir el encabezado CSV
-            writer.write("Name,Author,File Size (bytes),Page Size,Pages,Title,Subject,Keywords,FileType,Version,Source application,Images,Fonts\n");
-            // Llenar el archivo CSV con los datos de los archivos PDF
-            for (PDFFileInfo fileInfo : pdfFiles) {
-                StringBuilder line = new StringBuilder();
-                line.append(fileInfo.getName()).append(", ");
-                line.append(fileInfo.getAuthor()).append(", ");
-                line.append(fileInfo.getFileSize()).append(", ");
-                line.append(fileInfo.getPageSize()).append(", ");
-                line.append(fileInfo.getPageCount()).append(", ");
-                line.append(fileInfo.getTitle()).append(", ");
-                line.append(fileInfo.getSubject()).append(", ");
-                line.append(fileInfo.getKeywords()).append(", ");
-                line.append(fileInfo.getFileType()).append(", ");
-                line.append(fileInfo.getPdfVersion()).append(", ");
-                line.append(fileInfo.getCreator()).append(", ");
-                line.append(fileInfo.getImagesCount()).append(", ");
-                line.append(fileInfo.getImagesFontsCount()).append(", ");
-                writer.write(line.toString() + "\n");
-            }
-        } catch (IOException e) {
-            e.printStackTrace(System.out);
-        }
-    }
-
-
     
     private static void continuarMismaRuta() {
         ventanaOpciones.dispose();
@@ -567,7 +353,7 @@ public class PDFFileMetadataReader {
                 // Actualizar el texto del botón con el nuevo nombre
                 nombreButton.setText("Nombre: " + fileInfo.getName());
                 // Guardar la información actualizada en los archivos
-                guardarInformacionEnArchivo(pdfFiles);
+                PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
                 JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
                 // Actualizar la interfaz gráfica para reflejar los cambios
                 actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
@@ -582,7 +368,7 @@ public class PDFFileMetadataReader {
                 fileInfo.setTitle(nuevoTitulo);
                 tituloButton.setText("Titulo: " + fileInfo.getTitle());
                 // Guardar la información actualizada en los archivos
-                guardarInformacionEnArchivo(pdfFiles);
+                PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
                 JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
                 // Actualizar la interfaz gráfica para reflejar los cambios
                 actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
@@ -597,7 +383,7 @@ public class PDFFileMetadataReader {
                 fileInfo.setAuthor(nuevoAutor);
                 autorButton.setText("Autor: " + fileInfo.getAuthor());
                 // Guardar la información actualizada en los archivos
-                guardarInformacionEnArchivo(pdfFiles);
+                PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
                 JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
                 // Actualizar la interfaz gráfica para reflejar los cambios
                 actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
@@ -612,7 +398,7 @@ public class PDFFileMetadataReader {
                 fileInfo.setSubject(nuevoAsunto);
                 asuntoButton.setText("Asunto: " + fileInfo.getSubject());
                 // Guardar la información actualizada en los archivos
-                guardarInformacionEnArchivo(pdfFiles);
+                PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
                 JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
                 // Actualizar la interfaz gráfica para reflejar los cambios
                 actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
@@ -627,7 +413,7 @@ public class PDFFileMetadataReader {
                 fileInfo.setKeywords(nuevasPalabrasClave);
                 palabrasClaveButton.setText("Palabras Clave: " + fileInfo.getKeywords());
                 // Guardar la información actualizada en los archivos
-                guardarInformacionEnArchivo(pdfFiles);
+                PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
                 JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
                 // Actualizar la interfaz gráfica para reflejar los cambios
                 actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
