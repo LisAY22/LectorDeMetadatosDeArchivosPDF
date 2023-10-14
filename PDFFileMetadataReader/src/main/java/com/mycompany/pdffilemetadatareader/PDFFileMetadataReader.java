@@ -32,6 +32,8 @@ import org.apache.pdfbox.text.PDFTextStripper;
 
 public class PDFFileMetadataReader {
     
+    private static JFrame ventanaOpciones;
+    private static JFrame ventanaVistaArchivos;
     private static String csvFileName = "metadata.csv"; // Nombre del archivo CSV
 
     public static void main(String[] args) {
@@ -97,7 +99,7 @@ public class PDFFileMetadataReader {
 
     
     private static void mostrarVentanaOpciones() {
-        JFrame ventanaOpciones = new JFrame("Options");
+        ventanaOpciones = new JFrame("Options");
         ventanaOpciones.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventanaOpciones.setSize(400, 300);
         ventanaOpciones.setResizable(false);
@@ -375,12 +377,13 @@ public class PDFFileMetadataReader {
 
     
     private static void continuarMismaRuta() {
+        ventanaOpciones.dispose();
         // Cargar información de archivos PDF desde un archivo
         List<PDFFileInfo> pdfFilesOriginal = cargarInformacionDesdeArchivo();
         List<PDFFileInfo> pdfFiles = cargarInformacionDesdeArchivo(); // Hacer una copia de la lista original
 
         // Crear una ventana para mostrar los archivos PDF
-        JFrame ventanaVistaArchivos = new JFrame("File view");
+        ventanaVistaArchivos = new JFrame("File view");
         ventanaVistaArchivos.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Configurar el comportamiento de cierre
         ventanaVistaArchivos.setSize(900, 400); // Configurar tamaño de la ventana
         ventanaVistaArchivos.setResizable(false); // Evitar que la ventana sea redimensionable
@@ -432,11 +435,26 @@ public class PDFFileMetadataReader {
         orderNameButton.setOpaque(true);
         orderNameButton.setBorderPainted(false);
         orderNameButton.setFocusPainted(false);
+        
+        JButton regresar = new JButton("Regresar");
+        regresar.setBackground(new Color(232, 36, 36));
+        regresar.setPreferredSize(new Dimension(150, 30));
+        regresar.setForeground(Color.WHITE);
+        regresar.setOpaque(true);
+        regresar.setBorderPainted(false);
+        regresar.setFocusPainted(false);
 
         // Agregar botones al panel de botones de ordenar
+        orderButtonPanel.add(regresar);
         orderButtonPanel.add(orderNameButton);
         orderButtonPanel.add(orderAuthorButton);
         orderButtonPanel.add(orderSubjectButton);
+        
+        regresar.addActionListener (e -> {
+            ventanaOpciones.setVisible(true);
+            ventanaVistaArchivos.dispose();
+            
+        });
 
         // Agregar acciones para los botones de ordenar
         // Acción para ordenar por nombre
@@ -512,6 +530,7 @@ public class PDFFileMetadataReader {
     }
 
     private static void mostrarInformacionPDF(PDFFileInfo fileInfo, List<PDFFileInfo> pdfFiles) {
+        ventanaVistaArchivos.dispose();
         // Crear una nueva ventana para mostrar la información
         JFrame infoFrame = new JFrame("File Information");
         infoFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -527,6 +546,18 @@ public class PDFFileMetadataReader {
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.insets = new Insets(5, 0, 5, 0);
         
+        JButton regresar = new JButton("Regresar");
+        regresar.setBackground(new Color(232, 36, 36));
+        regresar.setPreferredSize(new Dimension(150, 30));
+        regresar.setForeground(Color.WHITE);
+        regresar.setOpaque(true);
+        regresar.setBorderPainted(false);
+        regresar.setFocusPainted(false);
+        regresar.addActionListener (e -> {
+            continuarMismaRuta();
+            infoFrame.dispose();
+        });
+        
         JButton nombreButton = new JButton("Nombre: " + fileInfo.getName());
         nombreButton.setPreferredSize(new Dimension(400, 30));
         nombreButton.addActionListener(e -> {
@@ -535,6 +566,11 @@ public class PDFFileMetadataReader {
                 fileInfo.setName(nuevoNombre);
                 // Actualizar el texto del botón con el nuevo nombre
                 nombreButton.setText("Nombre: " + fileInfo.getName());
+                // Guardar la información actualizada en los archivos
+                guardarInformacionEnArchivo(pdfFiles);
+                JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
+                // Actualizar la interfaz gráfica para reflejar los cambios
+                actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
             }
         });
         
@@ -560,6 +596,11 @@ public class PDFFileMetadataReader {
             if (nuevoAutor != null) {
                 fileInfo.setAuthor(nuevoAutor);
                 autorButton.setText("Autor: " + fileInfo.getAuthor());
+                // Guardar la información actualizada en los archivos
+                guardarInformacionEnArchivo(pdfFiles);
+                JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
+                // Actualizar la interfaz gráfica para reflejar los cambios
+                actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
             }
         });
 
@@ -570,6 +611,11 @@ public class PDFFileMetadataReader {
             if (nuevoAsunto != null) {
                 fileInfo.setSubject(nuevoAsunto);
                 asuntoButton.setText("Asunto: " + fileInfo.getSubject());
+                // Guardar la información actualizada en los archivos
+                guardarInformacionEnArchivo(pdfFiles);
+                JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
+                // Actualizar la interfaz gráfica para reflejar los cambios
+                actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
             }
         });
         
@@ -580,6 +626,11 @@ public class PDFFileMetadataReader {
             if (nuevasPalabrasClave != null) {
                 fileInfo.setKeywords(nuevasPalabrasClave);
                 palabrasClaveButton.setText("Palabras Clave: " + fileInfo.getKeywords());
+                // Guardar la información actualizada en los archivos
+                guardarInformacionEnArchivo(pdfFiles);
+                JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
+                // Actualizar la interfaz gráfica para reflejar los cambios
+                actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
             }
         });
 
@@ -606,7 +657,8 @@ public class PDFFileMetadataReader {
 
         JLabel imagenesFuentesLabel = new JLabel("Cantidad de Fuentes de Imágenes: " + fileInfo.getImagesFontsCount());
         imagenesFuentesLabel.setPreferredSize(new Dimension(400, 30));
-
+        
+        buttonPanel.add(regresar, gbc);
         buttonPanel.add(nombreButton, gbc);
         buttonPanel.add(tituloButton, gbc);
         buttonPanel.add(autorButton, gbc);
