@@ -67,15 +67,15 @@ public class PDFObtainInfo {
         try (PDDocument document = Loader.loadPDF(pdfFile)) {
             PDDocumentInformation info = document.getDocumentInformation();
             name = pdfFile.getName();
-            if (info.getAuthor() != null) {
+            if (info.getAuthor() != null && !info.getAuthor().trim().isEmpty()) {
                 author = info.getAuthor();
             } else {
                 author = "Sin autor";
-            }   if (info.getTitle() != null){
+            }   if (info.getTitle() != null && !info.getTitle().trim().isEmpty()){
                 title = info.getTitle();
             } else {
                 title = "Sin título";
-            }   if (info.getSubject() != null) {
+            }   if (info.getSubject() != null && !info.getSubject().trim().isEmpty()) {
                 subject = info.getSubject();
             } else {
                 subject = "Sin asunto";
@@ -83,13 +83,15 @@ public class PDFObtainInfo {
                 keywords = info.getKeywords();
             } else {
                 keywords = "Sin palabras clave";
-            }   fileType = "PDF";
+            }   
+            fileType = "PDF";
             pdfVersion = document.getVersion();
-            if (info.getCreator() != null) {
+            if (info.getCreator() != null && !info.getCreator().trim().isEmpty()) {
                 creator = info.getCreator();
             } else {
                 creator = "Sin aplicación de origen";
-            }   pageCount = document.getNumberOfPages();
+            }   
+            pageCount = document.getNumberOfPages();
             fileSize = pdfFile.length();
             imagesCount = countImagesInPDF(document);
             imagesFontsCount = countImagesWithFonts(document, "Fuente");

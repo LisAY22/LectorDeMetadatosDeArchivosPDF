@@ -9,6 +9,9 @@ import java.io.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -37,7 +40,7 @@ public class PDFFileMetadataReader {
         frame.setResizable(false);
 
         // Panel para la imagen
-        ImageIcon imageIcon = new ImageIcon("C:\\Users\\lisaj\\OneDrive\\Documentos\\GitHub\\LectorDeMetadatosDeArchivosPDF\\PDF file metadata reader.png");
+        ImageIcon imageIcon = new ImageIcon("C:\\Users\\karol\\Documentos\\GitHub\\LectorDeMetadatosDeArchivosPDF\\PDF file metadata reader.png");
         JLabel imageLabel = new JLabel(imageIcon);
         imageLabel.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
 
@@ -52,6 +55,7 @@ public class PDFFileMetadataReader {
         continueButton.setBorderPainted(false); // Quita el borde del botón
         continueButton.setFocusPainted(false); // Deshabilita el efecto de resaltado
         continueButton.setPreferredSize(new Dimension(200, 50)); // Ajusta el tamaño del botón
+        continueButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         
         continueButton.addActionListener(new ActionListener() {
@@ -101,6 +105,7 @@ public class PDFFileMetadataReader {
         ingresarRutaButton.setOpaque(true);
         ingresarRutaButton.setBorderPainted(false);
         ingresarRutaButton.setFocusPainted(false);
+        ingresarRutaButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         JButton continuarMismaRutaButton = new JButton("Continuar con la misma ruta");
         continuarMismaRutaButton.setBackground(new Color(232, 36, 36));
@@ -108,6 +113,7 @@ public class PDFFileMetadataReader {
         continuarMismaRutaButton.setOpaque(true);
         continuarMismaRutaButton.setBorderPainted(false);
         continuarMismaRutaButton.setFocusPainted(false);
+        continuarMismaRutaButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         // Configurar tamaño preferido para los botones
         Dimension buttonSize = new Dimension(300, 80);
@@ -185,16 +191,40 @@ public class PDFFileMetadataReader {
         for (PDFFileInfo fileInfo : pdfFiles) {
             JButton pdfButton = new JButton(fileInfo.getName() + "  |  Autor: " + fileInfo.getAuthor() + "  |  Asunto: " + fileInfo.getSubject());
             pdfButton.setPreferredSize(new Dimension(700, 40)); // Configurar el tamaño del botón
+            pdfButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            
+            Timer tooltipTimer = new Timer(1000, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    pdfButton.setToolTipText(null); // Ocultar el tooltip
+                    ((Timer) e.getSource()).stop(); // Detener el temporizador
+                }
+            });
+
+            pdfButton.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    pdfButton.setToolTipText("Abrir " + fileInfo.getName());
+                    tooltipTimer.restart(); // Reiniciar el temporizador al mover el mouse
+                }
+            });
+
+            
             pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo, pdfFiles)); // Agregar acción al hacer clic en el botón
             pdfButtonPanel.add(pdfButton, gbc); // Agregar botón al panel
             gbc.gridy++; // Cambiar de fila en el grid
         }
 
-        // Panel para los botones de ordenar
-        JPanel orderButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT)); // Usar FlowLayout para organizar los botones de ordenar
-        orderButtonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10)); // Ajustar espacios alrededor del panel
+        // Panel principal que contendrá los dos subpaneles
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        
 
-        // Crear botones para ordenar por nombre, autor y asunto, y agregarlos al panel
+        // Panel para los botones de ordenar (a la derecha)
+        JPanel orderButtonPanel = new JPanel();
+        orderButtonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        orderButtonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10));
+
+        // Botones de ordenar
         JButton orderAuthorButton = new JButton("Ordenar por Autor");
         // Configurar apariencia del botón
         orderAuthorButton.setBackground(new Color(232, 36, 36));
@@ -203,6 +233,7 @@ public class PDFFileMetadataReader {
         orderAuthorButton.setOpaque(true);
         orderAuthorButton.setBorderPainted(false);
         orderAuthorButton.setFocusPainted(false);
+        orderAuthorButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         JButton orderSubjectButton = new JButton("Ordenar por Asunto");
         // Configurar apariencia del botón
@@ -212,6 +243,7 @@ public class PDFFileMetadataReader {
         orderSubjectButton.setOpaque(true);
         orderSubjectButton.setBorderPainted(false);
         orderSubjectButton.setFocusPainted(false);
+        orderSubjectButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         JButton orderNameButton = new JButton("Ordenar por Nombre");
         // Configurar apariencia del botón
@@ -221,22 +253,49 @@ public class PDFFileMetadataReader {
         orderNameButton.setOpaque(true);
         orderNameButton.setBorderPainted(false);
         orderNameButton.setFocusPainted(false);
-        
-        JButton regresar = new JButton("Regresar");
-        regresar.setBackground(new Color(232, 36, 36));
-        regresar.setPreferredSize(new Dimension(150, 30));
-        regresar.setForeground(Color.WHITE);
-        regresar.setOpaque(true);
-        regresar.setBorderPainted(false);
-        regresar.setFocusPainted(false);
+        orderNameButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Agregar botones al panel de botones de ordenar
-        orderButtonPanel.add(regresar);
+        // Panel para el botón de regresar (a la izquierda)
+        JPanel backButtonPanel = new JPanel();
+        backButtonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        backButtonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10));
+        JButton backButton = new JButton("←");
+        backButton.setFont(backButton.getFont().deriveFont(Font.PLAIN, 24));
+        backButton.setBackground(new Color(232, 36, 36));
+        backButton.setPreferredSize(new Dimension(50, 30));
+        backButton.setForeground(Color.WHITE);
+        backButton.setOpaque(true);
+        backButton.setBorderPainted(false);
+        backButton.setFocusPainted(false);
+        backButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        Timer tooltipTimer = new Timer(1000, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    backButton.setToolTipText(null); // Ocultar el tooltip
+                    ((Timer) e.getSource()).stop(); // Detener el temporizador
+                }
+            });
+
+            backButton.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    backButton.setToolTipText("Regresar a Options");
+                    tooltipTimer.restart(); // Reiniciar el temporizador al mover el mouse
+                }
+            });
+
+        // Agregar botones a los paneles respectivos
         orderButtonPanel.add(orderNameButton);
         orderButtonPanel.add(orderAuthorButton);
         orderButtonPanel.add(orderSubjectButton);
+        backButtonPanel.add(backButton);
+
+        // Agregar los paneles al panel principal
+        mainPanel.add(backButtonPanel, BorderLayout.WEST);
+        mainPanel.add(orderButtonPanel, BorderLayout.CENTER);
         
-        regresar.addActionListener (e -> {
+        backButton.addActionListener (e -> {
             ventanaOpciones.setVisible(true);
             ventanaVistaArchivos.dispose();
             
@@ -251,15 +310,13 @@ public class PDFFileMetadataReader {
         });
 
         // Acción para ordenar por autor
-        orderAuthorButton.addActionListener(e -> {
-            pdfFiles.sort(Comparator.comparing(PDFFileInfo::getAuthor, Comparator.nullsLast(Comparator.naturalOrder()))
+        orderAuthorButton.addActionListener(e -> {pdfFiles.sort(Comparator.comparing(PDFFileInfo::getAuthor, Comparator.nullsLast(Comparator.naturalOrder()))
                     .thenComparing(PDFFileInfo::getSubject, Comparator.nullsLast(Comparator.naturalOrder())));
             actualizarBotonesPDF(pdfFiles, pdfButtonPanel); // Actualizar los botones en la interfaz gráfica
         });
 
         // Acción para ordenar por asunto
-        orderSubjectButton.addActionListener(e -> {
-            pdfFiles.sort(Comparator.comparing(PDFFileInfo::getSubject, Comparator.nullsLast(Comparator.naturalOrder()))
+        orderSubjectButton.addActionListener(e -> {pdfFiles.sort(Comparator.comparing(PDFFileInfo::getSubject, Comparator.nullsLast(Comparator.naturalOrder()))
                     .thenComparing(PDFFileInfo::getAuthor, Comparator.nullsLast(Comparator.naturalOrder())));
             actualizarBotonesPDF(pdfFiles, pdfButtonPanel); // Actualizar los botones en la interfaz gráfica
         });
@@ -270,7 +327,7 @@ public class PDFFileMetadataReader {
         verticalScrollBar.setUnitIncrement(16); // Ajustar el valor de la velocidad de desplazamiento
 
         // Agregar paneles a la ventana principal
-        ventanaVistaArchivos.add(orderButtonPanel, BorderLayout.NORTH); // Agregar panel de botones de ordenar en la parte superior
+        ventanaVistaArchivos.add(mainPanel, BorderLayout.NORTH); // Agregar panel de botones de ordenar en la parte superior
         ventanaVistaArchivos.getContentPane().add(scrollPane); // Agregar panel de botones de archivos PDF con barra de desplazamiento
 
         // Configurar posición y visibilidad de la ventana principal
@@ -305,6 +362,24 @@ public class PDFFileMetadataReader {
             // Crear un botón con el nombre, autor y asunto del archivo PDF
             JButton pdfButton = new JButton(fileInfo.getName() + "  |  Autor: " + fileInfo.getAuthor() + "  |  Asunto: " + fileInfo.getSubject());
             pdfButton.setPreferredSize(new Dimension(700, 40)); // Configurar el tamaño del botón
+            pdfButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            
+            Timer tooltipTimer = new Timer(1000, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    pdfButton.setToolTipText(null); // Ocultar el tooltip
+                    ((Timer) e.getSource()).stop(); // Detener el temporizador
+                }
+            });
+
+            pdfButton.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    pdfButton.setToolTipText("Abrir " + fileInfo.getName());
+                    tooltipTimer.restart(); // Reiniciar el temporizador al mover el mouse
+                }
+            });
+            
             pdfButton.addActionListener(e -> mostrarInformacionPDF(fileInfo, pdfFiles)); // Agregar acción al hacer clic en el botón
             pdfButtonPanel.add(pdfButton, gbc); // Agregar botón al panel
             gbc.gridy++; // Moverse a la siguiente fila en el grid
@@ -320,153 +395,239 @@ public class PDFFileMetadataReader {
         // Crear una nueva ventana para mostrar la información
         JFrame infoFrame = new JFrame("File Information");
         infoFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        infoFrame.setSize(500, 300);
+        infoFrame.setSize(500, 400);
         infoFrame.setResizable(false);
         infoFrame.setLocationRelativeTo(null);
 
-        // Crear un panel para contener los botones
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridBagLayout());
+        // Crear un panel para contener los TextField
+        JPanel TextFieldPanel = new JPanel();
+        TextFieldPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.insets = new Insets(5, 0, 5, 0);
         
-        JButton regresar = new JButton("Regresar");
-        regresar.setBackground(new Color(232, 36, 36));
-        regresar.setPreferredSize(new Dimension(150, 30));
-        regresar.setForeground(Color.WHITE);
-        regresar.setOpaque(true);
-        regresar.setBorderPainted(false);
-        regresar.setFocusPainted(false);
-        regresar.addActionListener (e -> {
+        JPanel backButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        backButtonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10));
+        
+        JButton backButton = new JButton("←");
+        backButton.setFont(backButton.getFont().deriveFont(Font.PLAIN, 24));
+        backButton.setBackground(new Color(232, 36, 36));
+        backButton.setPreferredSize(new Dimension(50, 30));
+        backButton.setForeground(Color.WHITE);
+        backButton.setOpaque(true);
+        backButton.setBorderPainted(false);
+        backButton.setFocusPainted(false);
+        backButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        Timer tooltipTimer = new Timer(1000, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    backButton.setToolTipText(null); // Ocultar el tooltip
+                    ((Timer) e.getSource()).stop(); // Detener el temporizador
+                }
+            });
+
+            backButton.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    backButton.setToolTipText("Regresar a File view");
+                    tooltipTimer.restart(); // Reiniciar el temporizador al mover el mouse
+                }
+            });
+        
+        backButtonPanel.add(backButton);
+        
+        backButton.addActionListener (e -> {
             continuarMismaRuta();
             infoFrame.dispose();
         });
         
-        JButton nombreButton = new JButton("Nombre: " + fileInfo.getName());
-        nombreButton.setPreferredSize(new Dimension(400, 30));
-        nombreButton.addActionListener(e -> {
-            String nuevoNombre = JOptionPane.showInputDialog(infoFrame, "Editar Nombre", fileInfo.getName());
-            if (nuevoNombre != null) {
-                fileInfo.setName(nuevoNombre);
-                // Actualizar el texto del botón con el nuevo nombre
-                nombreButton.setText("Nombre: " + fileInfo.getName());
-                // Guardar la información actualizada en los archivos
-                PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
-                JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
-                // Actualizar la interfaz gráfica para reflejar los cambios
-                actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+        JTextField nombreTextField = new JTextField("Nombre: " + fileInfo.getName());
+        nombreTextField.setPreferredSize(new Dimension(400, 30));
+        nombreTextField.setEditable(false);
+        nombreTextField.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+        nombreTextField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    JPopupMenu popupMenu = new JPopupMenu();
+                    JMenuItem editarItem = new JMenuItem("Editar nombre");
+                    editarItem.addActionListener(actionEvent -> {
+                        String nuevoNombre = JOptionPane.showInputDialog(infoFrame, "Editar Nombre", fileInfo.getName().replace(".pdf", ""));
+                        if (nuevoNombre != null && !nuevoNombre.isEmpty()) {
+                            fileInfo.setName(nuevoNombre + ".pdf");
+                            nombreTextField.setText("Nombre: " + fileInfo.getName());
+                            PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
+                            JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
+                            actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+                        }
+                    });
+                    popupMenu.add(editarItem);
+                    popupMenu.show(nombreTextField, e.getX(), e.getY());
+                }
             }
         });
         
-        JButton tituloButton = new JButton("Titulo: " + fileInfo.getTitle());
-        tituloButton.setPreferredSize(new Dimension(400, 30));
-        tituloButton.addActionListener(e -> {
-            String nuevoTitulo = JOptionPane.showInputDialog(infoFrame, "Editar Titulo", fileInfo.getTitle());
-            if (nuevoTitulo != null) {
-                fileInfo.setTitle(nuevoTitulo);
-                tituloButton.setText("Titulo: " + fileInfo.getTitle());
-                // Guardar la información actualizada en los archivos
-                PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
-                JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
-                // Actualizar la interfaz gráfica para reflejar los cambios
-                actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+        JTextField tituloTextField = new JTextField("Título: " + fileInfo.getTitle());
+        tituloTextField.setPreferredSize(new Dimension(400, 30));
+        tituloTextField.setEditable(false);
+        tituloTextField.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+        tituloTextField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    JPopupMenu popupMenu = new JPopupMenu();
+                    JMenuItem editarItem = new JMenuItem("Editar título");
+                    editarItem.addActionListener(actionEvent -> {
+                        String nuevoTitulo = JOptionPane.showInputDialog(infoFrame, "Editar título", fileInfo.getTitle());
+                        if (nuevoTitulo != null && !nuevoTitulo.isEmpty()) {
+                            fileInfo.setTitle(nuevoTitulo);
+                            tituloTextField.setText("Titulo: " + fileInfo.getName());
+                            PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
+                            JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
+                            actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+                        }
+                    });
+                    popupMenu.add(editarItem);
+                    popupMenu.show(tituloTextField, e.getX(), e.getY());
+                }
             }
         });
         
-        JButton autorButton = new JButton("Autor: " + fileInfo.getAuthor());
-        autorButton.setPreferredSize(new Dimension(400, 30));
-        autorButton.addActionListener(e -> {
-            String nuevoAutor = JOptionPane.showInputDialog(infoFrame, "Editar Autor", fileInfo.getAuthor());
-            if (nuevoAutor != null) {
-                fileInfo.setAuthor(nuevoAutor);
-                autorButton.setText("Autor: " + fileInfo.getAuthor());
-                // Guardar la información actualizada en los archivos
-                PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
-                JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
-                // Actualizar la interfaz gráfica para reflejar los cambios
-                actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+        JTextField autorTextField = new JTextField("Autor: " + fileInfo.getAuthor());
+        autorTextField.setPreferredSize(new Dimension(400, 30));
+        autorTextField.setEditable(false);
+        autorTextField.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+        autorTextField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    JPopupMenu popupMenu = new JPopupMenu();
+                    JMenuItem editarItem = new JMenuItem("Editar autor");
+                    editarItem.addActionListener(actionEvent -> {
+                        String nuevoAutor = JOptionPane.showInputDialog(infoFrame, "Editar Autor", fileInfo.getAuthor());
+                        if (nuevoAutor != null && !nuevoAutor.isEmpty()) {
+                            fileInfo.setAuthor(nuevoAutor);
+                            autorTextField.setText("Autor: " + fileInfo.getAuthor());
+                            PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
+                            JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
+                            actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+                        }
+                    });
+                    popupMenu.add(editarItem);
+                    popupMenu.show(autorTextField, e.getX(), e.getY());
+                }
             }
         });
 
-        JButton asuntoButton = new JButton("Asunto: " + fileInfo.getSubject());
-        asuntoButton.setPreferredSize(new Dimension(400, 30));
-        asuntoButton.addActionListener(e -> {
-            String nuevoAsunto = JOptionPane.showInputDialog(infoFrame, "Editar Asunto", fileInfo.getSubject());
-            if (nuevoAsunto != null) {
-                fileInfo.setSubject(nuevoAsunto);
-                asuntoButton.setText("Asunto: " + fileInfo.getSubject());
-                // Guardar la información actualizada en los archivos
-                PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
-                JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
-                // Actualizar la interfaz gráfica para reflejar los cambios
-                actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
-            }
-        });
-        
-        JButton palabrasClaveButton = new JButton("Palabras Clave: " + fileInfo.getKeywords());
-        palabrasClaveButton.setPreferredSize(new Dimension(400, 30));
-        palabrasClaveButton.addActionListener(e -> {
-            String nuevasPalabrasClave = JOptionPane.showInputDialog(infoFrame, "Editar Palabras Clave", fileInfo.getKeywords());
-            if (nuevasPalabrasClave != null) {
-                fileInfo.setKeywords(nuevasPalabrasClave);
-                palabrasClaveButton.setText("Palabras Clave: " + fileInfo.getKeywords());
-                // Guardar la información actualizada en los archivos
-                PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
-                JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
-                // Actualizar la interfaz gráfica para reflejar los cambios
-                actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+        JTextField asuntoTextField = new JTextField("Asunto: " + fileInfo.getSubject());
+        asuntoTextField.setPreferredSize(new Dimension(400, 30));
+        asuntoTextField.setEditable(false);
+        asuntoTextField.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+        asuntoTextField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    JPopupMenu popupMenu = new JPopupMenu();
+                    JMenuItem editarItem = new JMenuItem("Editar asunto");
+                    editarItem.addActionListener(actionEvent -> {
+                        String nuevoAsunto = JOptionPane.showInputDialog(infoFrame, "Editar Asunto", fileInfo.getSubject());
+                        if (nuevoAsunto != null && !nuevoAsunto.isEmpty()) {
+                            fileInfo.setSubject(nuevoAsunto);
+                            asuntoTextField.setText("Asunto: " + fileInfo.getSubject());
+                            PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
+                            JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
+                            actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+                        }
+                    });
+                    popupMenu.add(editarItem);
+                    popupMenu.show(asuntoTextField, e.getX(), e.getY());
+                }
             }
         });
 
-        JLabel tamañoArchivoLabel = new JLabel("Tamaño del Archivo: " + fileInfo.getFileSize() + " bytes");
-        tamañoArchivoLabel.setPreferredSize(new Dimension(400, 30));
         
-        JLabel tamañoPaginaLabel = new JLabel("Tamaño de Página: " + fileInfo.getPageSize());
-        tamañoPaginaLabel.setPreferredSize(new Dimension(400, 30));
+        JTextField palabrasClaveTextField = new JTextField("Palabras Clave: " + fileInfo.getKeywords());
+        palabrasClaveTextField.setPreferredSize(new Dimension(400, 30));
+        palabrasClaveTextField.setEditable(false);
+        palabrasClaveTextField.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+        palabrasClaveTextField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    JPopupMenu popupMenu = new JPopupMenu();
+                    JMenuItem editarItem = new JMenuItem("Editar palabras clave");
+                    editarItem.addActionListener(actionEvent -> {
+                        String nuevasPalabrasClave = JOptionPane.showInputDialog(infoFrame, "Editar palabras clave", fileInfo.getKeywords());
+                        if (nuevasPalabrasClave != null && !nuevasPalabrasClave.isEmpty()) {
+                            fileInfo.setKeywords(nuevasPalabrasClave);
+                            palabrasClaveTextField.setText("Palabras Clave: " + fileInfo.getKeywords());
+                            PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
+                            JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
+                            actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
+                        }
+                    });
+                    popupMenu.add(editarItem);
+                    popupMenu.show(palabrasClaveTextField, e.getX(), e.getY());
+                }
+            }
+        });
 
-        JLabel numPaginasLabel = new JLabel("Número de Páginas: " + fileInfo.getPageCount());
-        numPaginasLabel.setPreferredSize(new Dimension(400, 30));
-
-        JLabel versionLabel = new JLabel ("Versión: " + fileInfo.getPdfVersion());
-        versionLabel.setPreferredSize(new Dimension(400, 30));
-
-        JLabel tipoArchivoLabel = new JLabel("Tipo de Archivo: " + fileInfo.getFileType());
-        tipoArchivoLabel.setPreferredSize(new Dimension(400, 30));
+        JTextField tamañoArchivoTextField = new JTextField("Tamaño del Archivo: " + fileInfo.getFileSize() + " bytes");
+        tamañoArchivoTextField.setEditable(false);
+        tamañoArchivoTextField.setPreferredSize(new Dimension(400, 30));
         
-        JLabel creadorLabel = new JLabel("Aplicación con la que fue Creada: " + fileInfo.getCreator());
-        creadorLabel.setPreferredSize(new Dimension(400, 30));
-        
-        JLabel imagenesLabel = new JLabel("Cantidad de Imágenes: " + fileInfo.getImagesCount());
-        imagenesLabel.setPreferredSize(new Dimension(400, 30));
+        JTextField tamañoPaginaTextField = new JTextField("Tamaño de Página: " + fileInfo.getPageSize());
+        tamañoPaginaTextField.setEditable(false);
+        tamañoPaginaTextField.setPreferredSize(new Dimension(400, 30));
 
-        JLabel imagenesFuentesLabel = new JLabel("Cantidad de Fuentes de Imágenes: " + fileInfo.getImagesFontsCount());
-        imagenesFuentesLabel.setPreferredSize(new Dimension(400, 30));
+        JTextField numPaginasTextField = new JTextField("Número de Páginas: " + fileInfo.getPageCount());
+        numPaginasTextField.setEditable(false);
+        numPaginasTextField.setPreferredSize(new Dimension(400, 30));
+
+        JTextField versionTextField = new JTextField ("Versión: " + fileInfo.getPdfVersion());
+        versionTextField.setEditable(false);
+        versionTextField.setPreferredSize(new Dimension(400, 30));
+
+        JTextField tipoArchivoTextField = new JTextField("Tipo de Archivo: " + fileInfo.getFileType());
+        tipoArchivoTextField.setEditable(false);
+        tipoArchivoTextField.setPreferredSize(new Dimension(400, 30));
         
-        buttonPanel.add(regresar, gbc);
-        buttonPanel.add(nombreButton, gbc);
-        buttonPanel.add(tituloButton, gbc);
-        buttonPanel.add(autorButton, gbc);
-        buttonPanel.add(asuntoButton, gbc);
-        buttonPanel.add(palabrasClaveButton, gbc);
-        buttonPanel.add(tamañoArchivoLabel, gbc);
-        buttonPanel.add(tamañoPaginaLabel, gbc);
-        buttonPanel.add(numPaginasLabel, gbc);
-        buttonPanel.add(tipoArchivoLabel, gbc);
-        buttonPanel.add(versionLabel, gbc);
-        buttonPanel.add(creadorLabel, gbc);
-        buttonPanel.add(imagenesLabel, gbc);
-        buttonPanel.add(imagenesFuentesLabel, gbc);
+        JTextField creadorTextField = new JTextField("Aplicación con la que fue Creada: " + fileInfo.getCreator());
+        creadorTextField.setEditable(false);
+        creadorTextField.setPreferredSize(new Dimension(400, 30));
+        
+        JTextField imagenesTextField = new JTextField("Cantidad de Imágenes: " + fileInfo.getImagesCount());
+        imagenesTextField.setEditable(false);
+        imagenesTextField.setPreferredSize(new Dimension(400, 30));
+
+        JTextField imagenesFuentesTextField = new JTextField("Cantidad de Fuentes de Imágenes: " + fileInfo.getImagesFontsCount());
+        imagenesFuentesTextField.setEditable(false);
+        imagenesFuentesTextField.setPreferredSize(new Dimension(400, 30));
+        
+        TextFieldPanel.add(nombreTextField, gbc);
+        TextFieldPanel.add(tituloTextField, gbc);
+        TextFieldPanel.add(autorTextField, gbc);
+        TextFieldPanel.add(asuntoTextField, gbc);
+        TextFieldPanel.add(palabrasClaveTextField, gbc);
+        TextFieldPanel.add(tamañoArchivoTextField, gbc);
+        TextFieldPanel.add(tamañoPaginaTextField, gbc);
+        TextFieldPanel.add(numPaginasTextField, gbc);
+        TextFieldPanel.add(tipoArchivoTextField, gbc);
+        TextFieldPanel.add(versionTextField, gbc);
+        TextFieldPanel.add(creadorTextField, gbc);
+        TextFieldPanel.add(imagenesTextField, gbc);
+        TextFieldPanel.add(imagenesFuentesTextField, gbc);
     
         // Crear el JScrollPane y agregar el panel de botones
-        JScrollPane scrollPane = new JScrollPane(buttonPanel);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        scrollPane.setPreferredSize(new Dimension(400, 150));
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        JScrollPane scrollPane = new JScrollPane(TextFieldPanel); // Agregar panel de botones a un JScrollPane
+        JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+        verticalScrollBar.setUnitIncrement(16); // Ajustar el valor de la velocidad de desplazamiento
 
-        // Agregar el JScrollPane a la ventana
-        infoFrame.add(scrollPane);
+        // Agregar el panel del boton y el JScrollPane a la ventana
+        infoFrame.add(backButtonPanel, BorderLayout.NORTH);
+        infoFrame.getContentPane().add(scrollPane);
 
         infoFrame.setVisible(true);
     }
