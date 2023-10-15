@@ -170,8 +170,6 @@ public class PDFFileMetadataReader {
     
     private static void continuarMismaRuta() {
         ventanaOpciones.dispose();
-        // Cargar información de archivos PDF desde un archivo
-        List<PDFFileInfo> pdfFilesOriginal = cargarInformacionDesdeArchivo();
         List<PDFFileInfo> pdfFiles = cargarInformacionDesdeArchivo(); // Hacer una copia de la lista original
 
         // Crear una ventana para mostrar los archivos PDF
@@ -304,22 +302,28 @@ public class PDFFileMetadataReader {
         // Agregar acciones para los botones de ordenar
         // Acción para ordenar por nombre
         orderNameButton.addActionListener(e -> {
-            pdfFiles.clear();
-            pdfFiles.addAll(pdfFilesOriginal); // Restaurar el orden original
-            actualizarBotonesPDF(pdfFiles, pdfButtonPanel); // Actualizar los botones en la interfaz gráfica
+            // Ordena la lista pdfFiles por el nombre del archivo (case-insensitive)
+            pdfFiles.sort((pdfFileInfo1, pdfFileInfo2)
+                    -> String.CASE_INSENSITIVE_ORDER.compare(pdfFileInfo1.getName(), pdfFileInfo2.getName()));
+            actualizarBotonesPDF(pdfFiles, pdfButtonPanel); // Actualiza los botones en la interfaz gráfica
         });
 
         // Acción para ordenar por autor
-        orderAuthorButton.addActionListener(e -> {pdfFiles.sort(Comparator.comparing(PDFFileInfo::getAuthor, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .thenComparing(PDFFileInfo::getSubject, Comparator.nullsLast(Comparator.naturalOrder())));
-            actualizarBotonesPDF(pdfFiles, pdfButtonPanel); // Actualizar los botones en la interfaz gráfica
+        orderAuthorButton.addActionListener(e -> {
+            // Ordena la lista pdfFiles por el nombre del autor (case-insensitive)
+            pdfFiles.sort((pdfFileInfo1, pdfFileInfo2)
+                    -> String.CASE_INSENSITIVE_ORDER.compare(pdfFileInfo1.getAuthor(), pdfFileInfo2.getAuthor()));
+            actualizarBotonesPDF(pdfFiles, pdfButtonPanel); // Actualiza los botones en la interfaz gráfica
+        });
+        
+        // Acción para ordenar por asunto
+        orderSubjectButton.addActionListener(e -> {
+            // Ordena la lista pdfFiles por el asunto del archivo (case-insensitive)
+            pdfFiles.sort((pdfFileInfo1, pdfFileInfo2)
+                    -> String.CASE_INSENSITIVE_ORDER.compare(pdfFileInfo1.getSubject(), pdfFileInfo2.getSubject()));
+            actualizarBotonesPDF(pdfFiles, pdfButtonPanel); // Actualiza los botones en la interfaz gráfica
         });
 
-        // Acción para ordenar por asunto
-        orderSubjectButton.addActionListener(e -> {pdfFiles.sort(Comparator.comparing(PDFFileInfo::getSubject, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .thenComparing(PDFFileInfo::getAuthor, Comparator.nullsLast(Comparator.naturalOrder())));
-            actualizarBotonesPDF(pdfFiles, pdfButtonPanel); // Actualizar los botones en la interfaz gráfica
-        });
 
         // Configurar barra de desplazamiento para el panel de botones
         JScrollPane scrollPane = new JScrollPane(pdfButtonPanel); // Agregar panel de botones a un JScrollPane
@@ -483,7 +487,7 @@ public class PDFFileMetadataReader {
                         String nuevoTitulo = JOptionPane.showInputDialog(infoFrame, "Editar título", fileInfo.getTitle());
                         if (nuevoTitulo != null && !nuevoTitulo.isEmpty()) {
                             fileInfo.setTitle(nuevoTitulo);
-                            tituloTextField.setText("Titulo: " + fileInfo.getName());
+                            tituloTextField.setText("Titulo: " + fileInfo.getTitle());
                             PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
                             JPanel pdfButtonPanel = new JPanel(new GridBagLayout());
                             actualizarBotonesPDF(pdfFiles, pdfButtonPanel);
