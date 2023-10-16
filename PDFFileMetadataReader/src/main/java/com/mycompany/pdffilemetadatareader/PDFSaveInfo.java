@@ -23,7 +23,7 @@ public class PDFSaveInfo {
     private static void guardarInformacionEnCSV(List<PDFFileInfo> pdfFiles, String csvFileName) {
         try (FileWriter writer = new FileWriter(csvFileName)) {
             // Escribir el encabezado CSV
-            writer.write("Name,Author,File Size (bytes),Page Size,Pages,Title,Subject,Keywords,FileType,Version,Source application,Images,Fonts\n");
+            writer.write("Name,Author,File Size (bytes),Page Size,Pages,Title,Subject,Keywords,FileType,Version,Source application,Images,Fonts,Summary\n");
             // Llenar el archivo CSV con los datos de los archivos PDF
             for (PDFFileInfo fileInfo : pdfFiles) {
                 StringBuilder line = new StringBuilder();
@@ -40,6 +40,7 @@ public class PDFSaveInfo {
                 line.append(fileInfo.getCreator()).append(", ");
                 line.append(fileInfo.getImagesCount()).append(", ");
                 line.append(fileInfo.getImagesFontsCount()).append(", ");
+                line.append(fileInfo.getSummary()).append(", ");
                 writer.write(line.toString() + "\n");
             }
         } catch (IOException e) {

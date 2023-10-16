@@ -17,10 +17,11 @@ public class PDFFileInfo implements Serializable {
     private String creator;
     private int imagesCount;
     private int imagesFontsCount;
+    private final String summary;
 
     // Constructor
     public PDFFileInfo(File file, String name, String author, long fileSize, String pageSize, int pageCount, String title, String subject,
-                       String keywords, String fileType, float pdfVersion, String creator, int imagesCount, int imagesFontsCount) {
+                       String keywords, String fileType, float pdfVersion, String creator, int imagesCount, int imagesFontsCount, String summary) {
         this.file = file;
         this.name = name;
         this.author = author;
@@ -35,6 +36,7 @@ public class PDFFileInfo implements Serializable {
         this.creator = creator;
         this.imagesCount = imagesCount;
         this.imagesFontsCount = imagesFontsCount;
+        this.summary = summary;
     }
 
     // Métodos getter y setter para acceder a los atributos
@@ -149,6 +151,9 @@ public class PDFFileInfo implements Serializable {
     
     public void setImagesFontsCount(int imagesFontsCount) {
         this.imagesFontsCount = imagesFontsCount;
+    }
+    public String getSummary() {
+        return summary;
     }
 
 }

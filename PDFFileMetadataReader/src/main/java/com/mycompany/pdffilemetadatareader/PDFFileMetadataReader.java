@@ -13,7 +13,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 
@@ -610,6 +609,38 @@ public class PDFFileMetadataReader {
         imagenesFuentesTextField.setEditable(false);
         imagenesFuentesTextField.setPreferredSize(new Dimension(400, 30));
         
+        JButton verEditarResumenButton = new JButton("Ver y editar resumen");
+        // Configurar apariencia del botón
+        verEditarResumenButton.setBackground(new Color(232, 36, 36));
+        verEditarResumenButton.setPreferredSize(new Dimension(150, 30));
+        verEditarResumenButton.setForeground(Color.WHITE);
+        verEditarResumenButton.setOpaque(true);
+        verEditarResumenButton.setBorderPainted(false);
+        verEditarResumenButton.setFocusPainted(false);
+        verEditarResumenButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        verEditarResumenButton.addActionListener(e -> {
+            // Crear una nueva ventana para editar el resumen
+            JFrame summaryFrame = new JFrame("File Summary");
+            summaryFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            summaryFrame.setSize(500, 400);
+            summaryFrame.setResizable(false);
+            summaryFrame.setLocationRelativeTo(null);
+
+            // Crear un JTextArea para mostrar y editar el resumen
+            JTextArea resumenTextArea = new JTextArea(fileInfo.getSummary());
+            resumenTextArea.setLineWrap(true);
+            resumenTextArea.setWrapStyleWord(true);
+
+            // Crear un JScrollPane para el JTextArea
+            JScrollPane scrollPane = new JScrollPane(resumenTextArea);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+            // Agregar el JScrollPane al JFrame
+            summaryFrame.getContentPane().add(scrollPane);
+            summaryFrame.setVisible(true);
+        });
+        
+        
         TextFieldPanel.add(nombreTextField, gbc);
         TextFieldPanel.add(tituloTextField, gbc);
         TextFieldPanel.add(autorTextField, gbc);
@@ -623,6 +654,7 @@ public class PDFFileMetadataReader {
         TextFieldPanel.add(creadorTextField, gbc);
         TextFieldPanel.add(imagenesTextField, gbc);
         TextFieldPanel.add(imagenesFuentesTextField, gbc);
+        TextFieldPanel.add(verEditarResumenButton);
     
         // Crear el JScrollPane y agregar el panel de botones
         JScrollPane scrollPane = new JScrollPane(TextFieldPanel); // Agregar panel de botones a un JScrollPane

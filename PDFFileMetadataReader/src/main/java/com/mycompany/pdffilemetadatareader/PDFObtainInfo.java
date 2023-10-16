@@ -15,6 +15,7 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.pdfbox.text.TextPosition;
 
 
 public class PDFObtainInfo {
@@ -64,6 +65,7 @@ public class PDFObtainInfo {
         int imagesCount;
         int imagesFontsCount;
         String pageSize;
+        String summary;
         try (PDDocument document = Loader.loadPDF(pdfFile)) {
             PDDocumentInformation info = document.getDocumentInformation();
             name = pdfFile.getName();
@@ -96,10 +98,16 @@ public class PDFObtainInfo {
             imagesCount = countImagesInPDF(document);
             imagesFontsCount = countImagesWithFonts(document, "Fuente");
             pageSize = getPageSize(document);
+            if (getPDFSummary(document) != null && !getPDFSummary(document).trim().isEmpty()) {
+                summary = getPDFSummary(document);
+            } else {
+                summary = "Sin Resumen";
+            }
+            
         }
 
         // Crea una instancia de PDFFileInfo con la información recopilada
-        return new PDFFileInfo(pdfFile, name, author, fileSize, pageSize, pageCount, title, subject, keywords, fileType, pdfVersion, creator, imagesCount,imagesFontsCount);
+        return new PDFFileInfo(pdfFile, name, author, fileSize, pageSize, pageCount, title, subject, keywords, fileType, pdfVersion, creator, imagesCount,imagesFontsCount, summary);
     } catch (IOException e) {
         e.printStackTrace(System.out);
         return null;
@@ -171,4 +179,28 @@ public class PDFObtainInfo {
     return pageSize;
     }
     
+    private static String getPDFSummary(PDDocument document) throws IOException {
+        PDFTextStripper pdfStripper = new PDFTextStripper() {
+            @Override
+            protected void writeString(String text, List<TextPosition> textPositions) throws IOException {
+                super.writeString(text, textPositions);
+            }
+        };
+        String text = pdfStripper.getText(document);
+        String[] paragraphs = text.split("\n");
+        StringBuilder summary = new StringBuilder();
+        for (String paragraph : paragraphs) {
+            String[] sentences = paragraph.split("\\.");
+            for (String sentence : sentences) {
+                // Verificar si la oración tiene más de 15 palabras
+                String[] words = sentence.split("\\s+");
+                if (words.length > 15) {
+                    // Agregar la oración completa al resumen
+                    summary.append(sentence.trim()).append(" ");
+                }
+            }
+        }
+        
+        return summary.toString().trim();
+    }
 }
