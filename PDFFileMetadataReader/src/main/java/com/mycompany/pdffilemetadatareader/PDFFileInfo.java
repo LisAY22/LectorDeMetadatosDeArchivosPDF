@@ -3,21 +3,21 @@ import java.io.File;
 import java.io.Serializable;
 
 public class PDFFileInfo implements Serializable {
-    private File file;
+    private final File file;
     private String name;
     private String author;
-    private long fileSize;
-    private String pageSize;
-    private int pageCount;
+    private final long fileSize;
+    private final String pageSize;
+    private final int pageCount;
     private String title;
     private String subject;
     private String keywords;
-    private String fileType;
-    private float pdfVersion;
-    private String creator;
-    private int imagesCount;
-    private int imagesFontsCount;
-    private final String summary;
+    private final String fileType;
+    private final float pdfVersion;
+    private final String creator;
+    private final int imagesCount;
+    private final int imagesFontsCount;
+    private String summary;
 
     // Constructor
     public PDFFileInfo(File file, String name, String author, long fileSize, String pageSize, int pageCount, String title, String subject,
@@ -44,10 +44,6 @@ public class PDFFileInfo implements Serializable {
     public File getFile() {
         return file;
     }
-
-    public void setFile(File file) {
-        this.file = file;
-    }
     
     public String getName() {
         return name;
@@ -68,25 +64,12 @@ public class PDFFileInfo implements Serializable {
     public long getFileSize() {
         return fileSize;
     }
-
-    public void setFileSize(long fileSize) {
-        this.fileSize = fileSize;
-    }
     
     public String getPageSize() {
         return pageSize;
     }
-    
-    public void setPagesSize(String pageSize) {
-        this.pageSize = pageSize;
-    }
-
     public int getPageCount() {
         return pageCount;
-    }
-
-    public void setPageCount(int pageCount) {
-        this.pageCount = pageCount;
     }
 
     public String getTitle() {
@@ -117,43 +100,27 @@ public class PDFFileInfo implements Serializable {
         return fileType;
     }
 
-    public void setFileType(String fileType) {
-        this.fileType = fileType;
-    }
-
     public float getPdfVersion() {
         return pdfVersion;
     }
 
-    public void setPdfVersion(float pdfVersion) {
-        this.pdfVersion = pdfVersion;
-    }
-
     public String getCreator() {
         return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
     }
     
     public int getImagesCount(){
         return imagesCount;
     }
     
-    public void setImagesCount(int imagesCount) {
-        this.imagesCount = imagesCount;
-    }
-    
     public int getImagesFontsCount() {
         return imagesFontsCount;
     }
     
-    public void setImagesFontsCount(int imagesFontsCount) {
-        this.imagesFontsCount = imagesFontsCount;
-    }
     public String getSummary() {
         return summary;
+    }
+    public void setSummary(String summary){
+        this.summary = summary;
     }
 
 }

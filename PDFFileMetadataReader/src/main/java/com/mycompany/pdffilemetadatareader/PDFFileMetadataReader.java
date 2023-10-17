@@ -14,6 +14,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.AttributeSet;
 
 
 public class PDFFileMetadataReader {
@@ -618,27 +622,7 @@ public class PDFFileMetadataReader {
         verEditarResumenButton.setBorderPainted(false);
         verEditarResumenButton.setFocusPainted(false);
         verEditarResumenButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        verEditarResumenButton.addActionListener(e -> {
-            // Crear una nueva ventana para editar el resumen
-            JFrame summaryFrame = new JFrame("File Summary");
-            summaryFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            summaryFrame.setSize(500, 400);
-            summaryFrame.setResizable(false);
-            summaryFrame.setLocationRelativeTo(null);
-
-            // Crear un JTextArea para mostrar y editar el resumen
-            JTextArea resumenTextArea = new JTextArea(fileInfo.getSummary());
-            resumenTextArea.setLineWrap(true);
-            resumenTextArea.setWrapStyleWord(true);
-
-            // Crear un JScrollPane para el JTextArea
-            JScrollPane scrollPane = new JScrollPane(resumenTextArea);
-            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-
-            // Agregar el JScrollPane al JFrame
-            summaryFrame.getContentPane().add(scrollPane);
-            summaryFrame.setVisible(true);
-        });
+        verEditarResumenButton.addActionListener(e -> verEditarResumenPDF(fileInfo, pdfFiles));
         
         
         TextFieldPanel.add(nombreTextField, gbc);
@@ -666,6 +650,72 @@ public class PDFFileMetadataReader {
         infoFrame.getContentPane().add(scrollPane);
 
         infoFrame.setVisible(true);
+    }
+    
+    private static void verEditarResumenPDF(PDFFileInfo fileInfo, List<PDFFileInfo> pdfFiles) {
+        // Crear una nueva ventana para editar el resumen
+        JFrame summaryFrame = new JFrame("File Summary");
+        summaryFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        summaryFrame.setSize(500, 400);
+        summaryFrame.setResizable(false);
+        summaryFrame.setLocationRelativeTo(null);
+
+        JTextPane resumenTextPane = new JTextPane();
+        resumenTextPane.setText(fileInfo.getSummary());
+        resumenTextPane.setEditable(true); // Habilita la edición del texto
+
+        // Agregar botones para el formato de texto
+        JButton boldButton = new JButton("Negrita");
+        JButton italicButton = new JButton("Itálica");
+        JButton underlineButton = new JButton("Subrayado");
+
+        boldButton.addActionListener(evt -> applyStyle(resumenTextPane, "bold"));
+        italicButton.addActionListener(evt -> applyStyle(resumenTextPane, "italic"));
+        underlineButton.addActionListener(evt -> applyStyle(resumenTextPane, "underline"));
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(boldButton);
+        buttonPanel.add(italicButton);
+        buttonPanel.add(underlineButton);
+
+        // Botón para guardar las actualizaciones
+        JButton saveButton = new JButton("Guardar");
+        saveButton.addActionListener(evt -> {
+            String updatedSummary = resumenTextPane.getText();
+            fileInfo.setSummary(updatedSummary);
+            PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
+            JOptionPane.showMessageDialog(summaryFrame, "Resumen guardado exitosamente.");
+        });
+
+        // Crear un JScrollPane para el JTextPane
+        JScrollPane scrollPane = new JScrollPane(resumenTextPane);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+        // Agregar componentes al JFrame de edición de resumen
+        summaryFrame.getContentPane().setLayout(new BorderLayout());
+        summaryFrame.getContentPane().add(scrollPane, BorderLayout.CENTER);
+        summaryFrame.getContentPane().add(buttonPanel, BorderLayout.NORTH);
+        summaryFrame.getContentPane().add(saveButton, BorderLayout.SOUTH);
+        summaryFrame.setVisible(true);
+    }
+    
+    // Método para aplicar/quitar negrita, cursiva o subrayado al texto seleccionado
+    private static void applyStyle(JTextPane textPane, String style) {
+        StyledDocument doc = textPane.getStyledDocument();
+        int start = textPane.getSelectionStart();
+        int end = textPane.getSelectionEnd();
+        SimpleAttributeSet attributes = new SimpleAttributeSet();
+        AttributeSet originalAttributes = doc.getCharacterElement(start).getAttributes();
+
+        switch (style) {
+            case "bold" -> StyleConstants.setBold(attributes, !StyleConstants.isBold(originalAttributes));
+            case "italic" -> StyleConstants.setItalic(attributes, !StyleConstants.isItalic(originalAttributes));
+            case "underline" -> StyleConstants.setUnderline(attributes, !StyleConstants.isUnderline(originalAttributes));
+            default -> {
+            }
+        }
+
+        doc.setCharacterAttributes(start, end - start, attributes, false);
     }
 
 }

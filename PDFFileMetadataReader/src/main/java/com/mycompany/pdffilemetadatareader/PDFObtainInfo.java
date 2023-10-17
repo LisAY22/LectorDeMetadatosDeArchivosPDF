@@ -196,7 +196,7 @@ public class PDFObtainInfo {
                 String[] words = sentence.split("\\s+");
                 if (words.length > 15) {
                     // Agregar la oración completa al resumen
-                    summary.append(sentence.trim()).append(" ");
+                    summary.append(sentence.trim()).append(". ");
                 }
             }
         }
