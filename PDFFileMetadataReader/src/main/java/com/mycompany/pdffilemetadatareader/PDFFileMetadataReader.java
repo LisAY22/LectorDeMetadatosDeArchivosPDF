@@ -669,9 +669,9 @@ public class PDFFileMetadataReader {
         JButton italicButton = new JButton("Itálica");
         JButton underlineButton = new JButton("Subrayado");
 
-        boldButton.addActionListener(evt -> applyStyle(resumenTextPane, "bold"));
-        italicButton.addActionListener(evt -> applyStyle(resumenTextPane, "italic"));
-        underlineButton.addActionListener(evt -> applyStyle(resumenTextPane, "underline"));
+        boldButton.addActionListener(e -> applyStyle(resumenTextPane, "bold"));
+        italicButton.addActionListener(e -> applyStyle(resumenTextPane, "italic"));
+        underlineButton.addActionListener(e -> applyStyle(resumenTextPane, "underline"));
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(boldButton);
