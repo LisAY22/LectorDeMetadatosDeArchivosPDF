@@ -613,6 +613,8 @@ public class PDFFileMetadataReader {
         imagenesFuentesTextField.setEditable(false);
         imagenesFuentesTextField.setPreferredSize(new Dimension(400, 30));
         
+        JPanel summaryBnPanel = new JPanel();
+        
         JButton verEditarResumenButton = new JButton("Ver y editar resumen");
         // Configurar apariencia del botón
         verEditarResumenButton.setBackground(new Color(232, 36, 36));
@@ -623,6 +625,8 @@ public class PDFFileMetadataReader {
         verEditarResumenButton.setFocusPainted(false);
         verEditarResumenButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         verEditarResumenButton.addActionListener(e -> verEditarResumenPDF(fileInfo, pdfFiles));
+        
+        summaryBnPanel.add(verEditarResumenButton);
         
         
         TextFieldPanel.add(nombreTextField, gbc);
@@ -638,7 +642,6 @@ public class PDFFileMetadataReader {
         TextFieldPanel.add(creadorTextField, gbc);
         TextFieldPanel.add(imagenesTextField, gbc);
         TextFieldPanel.add(imagenesFuentesTextField, gbc);
-        TextFieldPanel.add(verEditarResumenButton);
     
         // Crear el JScrollPane y agregar el panel de botones
         JScrollPane scrollPane = new JScrollPane(TextFieldPanel); // Agregar panel de botones a un JScrollPane
@@ -648,6 +651,7 @@ public class PDFFileMetadataReader {
         // Agregar el panel del boton y el JScrollPane a la ventana
         infoFrame.add(backButtonPanel, BorderLayout.NORTH);
         infoFrame.getContentPane().add(scrollPane);
+        infoFrame.add(summaryBnPanel, BorderLayout.SOUTH);
 
         infoFrame.setVisible(true);
     }
@@ -656,7 +660,7 @@ public class PDFFileMetadataReader {
         // Crear una nueva ventana para editar el resumen
         JFrame summaryFrame = new JFrame("File Summary");
         summaryFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        summaryFrame.setSize(500, 400);
+        summaryFrame.setSize(400, 300);
         summaryFrame.setResizable(false);
         summaryFrame.setLocationRelativeTo(null);
 
@@ -664,10 +668,32 @@ public class PDFFileMetadataReader {
         resumenTextPane.setText(fileInfo.getSummary());
         resumenTextPane.setEditable(true); // Habilita la edición del texto
 
-        // Agregar botones para el formato de texto
-        JButton boldButton = new JButton("Negrita");
-        JButton italicButton = new JButton("Itálica");
-        JButton underlineButton = new JButton("Subrayado");
+        JButton boldButton = new JButton("<html><b>B</b></html>");
+        boldButton.setBackground(new Color(232, 36, 36));
+        boldButton.setPreferredSize(new Dimension(50, 30));
+        boldButton.setForeground(Color.WHITE);
+        boldButton.setOpaque(true);
+        boldButton.setBorderPainted(false);
+        boldButton.setFocusPainted(false);
+        boldButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        JButton italicButton = new JButton("<html><i>I</i></html>");
+        italicButton.setBackground(new Color(232, 36, 36));
+        italicButton.setPreferredSize(new Dimension(50, 30));
+        italicButton.setForeground(Color.WHITE);
+        italicButton.setOpaque(true);
+        italicButton.setBorderPainted(false);
+        italicButton.setFocusPainted(false);
+        italicButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        JButton underlineButton = new JButton("<html><u>U</u></html>");
+        underlineButton.setBackground(new Color(232, 36, 36));
+        underlineButton.setPreferredSize(new Dimension(50, 30));
+        underlineButton.setForeground(Color.WHITE);
+        underlineButton.setOpaque(true);
+        underlineButton.setBorderPainted(false);
+        underlineButton.setFocusPainted(false);
+        underlineButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         boldButton.addActionListener(e -> applyStyle(resumenTextPane, "bold"));
         italicButton.addActionListener(e -> applyStyle(resumenTextPane, "italic"));
@@ -680,7 +706,14 @@ public class PDFFileMetadataReader {
 
         // Botón para guardar las actualizaciones
         JButton saveButton = new JButton("Guardar");
-        saveButton.addActionListener(evt -> {
+        saveButton.setBackground(new Color(232, 36, 36));
+        saveButton.setForeground(Color.WHITE);
+        saveButton.setOpaque(true);
+        saveButton.setBorderPainted(false);
+        saveButton.setFocusPainted(false);
+        saveButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        saveButton.addActionListener(e -> {
             String updatedSummary = resumenTextPane.getText();
             fileInfo.setSummary(updatedSummary);
             PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
@@ -689,12 +722,13 @@ public class PDFFileMetadataReader {
 
         // Crear un JScrollPane para el JTextPane
         JScrollPane scrollPane = new JScrollPane(resumenTextPane);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+        verticalScrollBar.setUnitIncrement(16);
 
         // Agregar componentes al JFrame de edición de resumen
         summaryFrame.getContentPane().setLayout(new BorderLayout());
-        summaryFrame.getContentPane().add(scrollPane, BorderLayout.CENTER);
         summaryFrame.getContentPane().add(buttonPanel, BorderLayout.NORTH);
+        summaryFrame.getContentPane().add(scrollPane, BorderLayout.CENTER);
         summaryFrame.getContentPane().add(saveButton, BorderLayout.SOUTH);
         summaryFrame.setVisible(true);
     }
