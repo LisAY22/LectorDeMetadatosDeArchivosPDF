@@ -181,26 +181,46 @@ public class PDFObtainInfo {
     
     private static String getPDFSummary(PDDocument document) throws IOException {
         PDFTextStripper pdfStripper = new PDFTextStripper() {
+            int newLineCount = 0;
+            boolean newLineRequired = false;
+
             @Override
             protected void writeString(String text, List<TextPosition> textPositions) throws IOException {
-                super.writeString(text, textPositions);
+                if (text.trim().isEmpty()) {
+                    if (newLineRequired) {
+                        newLineCount++;
+                    }
+                } else {
+                    if (newLineCount > 3) {
+                        newLineCount = 3;
+                    }
+                    while (newLineCount > 0) {
+                        super.writeString("\n", null);
+                        newLineCount--;
+                    }
+                    newLineRequired = false;
+                    super.writeString(text, textPositions);
+                }
+            }
+
+            @Override
+            protected void writeLineSeparator() throws IOException {
+                newLineRequired = true;
             }
         };
         String text = pdfStripper.getText(document);
-        String[] paragraphs = text.split("\n");
-        StringBuilder summary = new StringBuilder();
-        for (String paragraph : paragraphs) {
-            String[] sentences = paragraph.split("\\.");
-            for (String sentence : sentences) {
-                // Verificar si la oración tiene más de 15 palabras
-                String[] words = sentence.split("\\s+");
-                if (words.length > 15) {
-                    // Agregar la oración completa al resumen
-                    summary.append(sentence.trim()).append(". ");
-                }
+        
+        List<String> summary = new ArrayList<>();
+        String[] sentences = text.split("\\.");
+
+        for (String sentence : sentences) {
+
+            if (sentence.split(" ").length > 40) {
+                summary.add(sentence);
             }
         }
-        
-        return summary.toString().trim();
+
+        String joinedSummary = String.join(".\n", summary);
+        return joinedSummary.trim();
     }
 }
