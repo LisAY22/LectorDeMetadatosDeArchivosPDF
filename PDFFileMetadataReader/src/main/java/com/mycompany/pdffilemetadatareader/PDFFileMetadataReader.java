@@ -174,8 +174,16 @@ public class PDFFileMetadataReader {
         List<PDFFileInfo> pdfFiles = PDFObtainInfo.buscarArchivosPDF(selectedFolder);
         // Guardar la información de los archivos PDF en un archivo, usando la función guardarInformacionEnArchivo
         PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
-        // Mostrar un mensaje al usuario para indicar que la búsqueda se ha completado y los datos se han guardado
-        JOptionPane.showMessageDialog(null, "Búsqueda completada y datos guardados.");
+        if (pdfFiles.isEmpty()) {
+            // Mostrar un mensaje al usuario indicando que no se encontraron archivos PDF
+            JOptionPane.showMessageDialog(null, "Busqueda completada.\nNo se encontró ningún archivo PDF en el directorio seleccionado.");
+        } else {
+            // Guardar la información de los archivos PDF en un archivo, usando la función guardarInformacionEnArchivo
+            PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
+            // Mostrar un mensaje al usuario para indicar que la búsqueda se ha completado y los datos se han guardado
+            JOptionPane.showMessageDialog(null, "Búsqueda completada y datos guardados.");
+        }
+        
     }
     }
 
