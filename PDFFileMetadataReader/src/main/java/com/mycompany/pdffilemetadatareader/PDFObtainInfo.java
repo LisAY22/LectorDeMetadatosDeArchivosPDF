@@ -7,6 +7,9 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.StyledDocument;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -66,6 +69,8 @@ public class PDFObtainInfo {
         int imagesFontsCount;
         String pageSize;
         String summary;
+        StyledDocument summaryDocument;
+        
         try (PDDocument document = Loader.loadPDF(pdfFile)) {
             PDDocumentInformation info = document.getDocumentInformation();
             name = pdfFile.getName();
@@ -103,11 +108,20 @@ public class PDFObtainInfo {
             } else {
                 summary = "Sin Resumen";
             }
+            StringBuilder summaryBuilder = new StringBuilder();
+            summaryBuilder.append(summary);
+
+            summaryDocument = new DefaultStyledDocument();
+            try {
+                summaryDocument.insertString(0, summaryBuilder.toString(), null);
+            } catch (BadLocationException e) {
+                e.printStackTrace(System.out);
+            }
             
         }
 
         // Crea una instancia de PDFFileInfo con la información recopilada
-        return new PDFFileInfo(pdfFile, name, author, fileSize, pageSize, pageCount, title, subject, keywords, fileType, pdfVersion, creator, imagesCount,imagesFontsCount, summary);
+        return new PDFFileInfo(pdfFile, name, author, fileSize, pageSize, pageCount, title, subject, keywords, fileType, pdfVersion, creator, imagesCount,imagesFontsCount, summary, summaryDocument);
     } catch (IOException e) {
         e.printStackTrace(System.out);
         return null;

@@ -1,6 +1,7 @@
 package com.mycompany.pdffilemetadatareader;
 import java.io.File;
 import java.io.Serializable;
+import javax.swing.text.StyledDocument;
 
 public class PDFFileInfo implements Serializable {
     private final File file;
@@ -18,10 +19,11 @@ public class PDFFileInfo implements Serializable {
     private final int imagesCount;
     private final int imagesFontsCount;
     private String summary;
+    private StyledDocument document;
 
     // Constructor
     public PDFFileInfo(File file, String name, String author, long fileSize, String pageSize, int pageCount, String title, String subject,
-                       String keywords, String fileType, float pdfVersion, String creator, int imagesCount, int imagesFontsCount, String summary) {
+                       String keywords, String fileType, float pdfVersion, String creator, int imagesCount, int imagesFontsCount, String summary, StyledDocument document) {
         this.file = file;
         this.name = name;
         this.author = author;
@@ -37,6 +39,7 @@ public class PDFFileInfo implements Serializable {
         this.imagesCount = imagesCount;
         this.imagesFontsCount = imagesFontsCount;
         this.summary = summary;
+        this.document = document;
     }
 
     // Métodos getter y setter para acceder a los atributos
@@ -121,6 +124,14 @@ public class PDFFileInfo implements Serializable {
     }
     public void setSummary(String summary){
         this.summary = summary;
+    }
+    
+    public StyledDocument getSummaryDocument() {
+        return document;
+    }
+    
+    public void setSummaryDocument(StyledDocument styleDocument) {
+        document = styleDocument;
     }
 
 }

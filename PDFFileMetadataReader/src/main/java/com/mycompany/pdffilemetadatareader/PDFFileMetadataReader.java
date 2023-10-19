@@ -14,10 +14,14 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
 
 
 public class PDFFileMetadataReader {
@@ -67,7 +71,11 @@ public class PDFFileMetadataReader {
                 frame.dispose();
                 // Si es la primera vez, se ingresará la ruta
                 if (isFirstTime) {
-                    ingresarRuta();
+                    try {
+                        ingresarRuta();
+                    } catch (BadLocationException ex) {
+                        Logger.getLogger(PDFFileMetadataReader.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     mostrarVentanaOpciones();
                 // Si no es la primera vez se abrira una ventana con dos opciones
                 } else {
@@ -88,7 +96,6 @@ public class PDFFileMetadataReader {
         frame.setVisible(true);
     }
 
-    
     private static void mostrarVentanaOpciones() {
         ventanaOpciones = new JFrame("Options");
         ventanaOpciones.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -134,7 +141,11 @@ public class PDFFileMetadataReader {
         ingresarRutaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ingresarRuta();
+                try {
+                    ingresarRuta();
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(PDFFileMetadataReader.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
         continuarMismaRutaButton.addActionListener(new ActionListener() {
@@ -148,9 +159,8 @@ public class PDFFileMetadataReader {
         ventanaOpciones.setLocationRelativeTo(null);
         ventanaOpciones.setVisible(true);
     }
-  
     
-    private static void ingresarRuta() {
+    private static void ingresarRuta() throws BadLocationException {
     // Mostrar un cuadro de diálogo para que el usuario seleccione una carpeta
     JFileChooser fileChooser = new JFileChooser();
     // Configurar el cuadro de diálogo para seleccionar solo directorios (carpetas)
@@ -169,8 +179,7 @@ public class PDFFileMetadataReader {
         JOptionPane.showMessageDialog(null, "Búsqueda completada y datos guardados.");
     }
     }
-    
-    
+
     private static void continuarMismaRuta() {
         ventanaOpciones.dispose();
         List<PDFFileInfo> pdfFiles = cargarInformacionDesdeArchivo(); // Hacer una copia de la lista original
@@ -178,7 +187,7 @@ public class PDFFileMetadataReader {
         // Crear una ventana para mostrar los archivos PDF
         ventanaVistaArchivos = new JFrame("File view");
         ventanaVistaArchivos.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Configurar el comportamiento de cierre
-        ventanaVistaArchivos.setSize(900, 400); // Configurar tamaño de la ventana
+        ventanaVistaArchivos.setSize(900, 500); // Configurar tamaño de la ventana
         ventanaVistaArchivos.setResizable(false); // Evitar que la ventana sea redimensionable
 
         // Panel para mostrar los archivos PDF como botones en una cuadrícula
@@ -341,8 +350,6 @@ public class PDFFileMetadataReader {
         ventanaVistaArchivos.setLocationRelativeTo(null); // Centrar la ventana en la pantalla
         ventanaVistaArchivos.setVisible(true); // Hacer la ventana visible
     }
-
-
 
     private static List<PDFFileInfo> cargarInformacionDesdeArchivo() {
         List<PDFFileInfo> pdfFiles = new ArrayList<>();
@@ -656,6 +663,7 @@ public class PDFFileMetadataReader {
         infoFrame.setVisible(true);
     }
     
+    private static boolean summaryFirstTime = true;
     private static void verEditarResumenPDF(PDFFileInfo fileInfo, List<PDFFileInfo> pdfFiles) {
         // Crear una nueva ventana para editar el resumen
         JFrame summaryFrame = new JFrame("File Summary");
@@ -663,9 +671,36 @@ public class PDFFileMetadataReader {
         summaryFrame.setSize(400, 300);
         summaryFrame.setResizable(false);
         summaryFrame.setLocationRelativeTo(null);
-
+        
         JTextPane resumenTextPane = new JTextPane();
-        resumenTextPane.setText(fileInfo.getSummary());
+
+        if (summaryFirstTime) {
+            // Obtén el resumen del archivo y conviértelo en un StyledDocument
+            String summaryText = fileInfo.getSummary();
+            if (summaryText != null && !summaryText.isEmpty()) {
+                StyledDocument summaryDocument = new DefaultStyledDocument();
+                try {
+                    summaryDocument.insertString(0, summaryText, null);
+                    fileInfo.setSummaryDocument(summaryDocument);
+                } catch (BadLocationException e) {
+                    e.printStackTrace(System.out);
+                }
+
+                // Establece el StyledDocument en el JTextPane
+                resumenTextPane.setStyledDocument(summaryDocument);
+            }
+
+            summaryFirstTime = false;
+            
+        } else {
+            StyledDocument document = fileInfo.getSummaryDocument();
+            if (document != null) {
+                resumenTextPane.setStyledDocument(document);
+            }
+        }
+
+        resumenTextPane.setEditable(true);
+        
         resumenTextPane.setEditable(true); // Habilita la edición del texto
 
         JButton boldButton = new JButton("<html><b>B</b></html>");
@@ -714,8 +749,13 @@ public class PDFFileMetadataReader {
         saveButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         saveButton.addActionListener(e -> {
-            String updatedSummary = resumenTextPane.getText();
-            fileInfo.setSummary(updatedSummary);
+            String updateText = resumenTextPane.getText();
+            StyledDocument updatedDocument = resumenTextPane.getStyledDocument();
+            
+
+            // Guardar el documento y sus atributos de estilo
+            fileInfo.setSummary(updateText);
+            fileInfo.setSummaryDocument(updatedDocument);
             PDFSaveInfo.guardarInformacionEnArchivo(pdfFiles, csvFileName);
             JOptionPane.showMessageDialog(summaryFrame, "Resumen guardado exitosamente.");
         });
