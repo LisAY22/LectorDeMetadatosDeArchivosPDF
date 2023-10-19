@@ -674,30 +674,11 @@ public class PDFFileMetadataReader {
         
         JTextPane resumenTextPane = new JTextPane();
 
-        if (summaryFirstTime) {
-            // Obtén el resumen del archivo y conviértelo en un StyledDocument
-            String summaryText = fileInfo.getSummary();
-            if (summaryText != null && !summaryText.isEmpty()) {
-                StyledDocument summaryDocument = new DefaultStyledDocument();
-                try {
-                    summaryDocument.insertString(0, summaryText, null);
-                    fileInfo.setSummaryDocument(summaryDocument);
-                } catch (BadLocationException e) {
-                    e.printStackTrace(System.out);
-                }
-
-                // Establece el StyledDocument en el JTextPane
-                resumenTextPane.setStyledDocument(summaryDocument);
-            }
-
-            summaryFirstTime = false;
-            
-        } else {
-            StyledDocument document = fileInfo.getSummaryDocument();
-            if (document != null) {
-                resumenTextPane.setStyledDocument(document);
-            }
+        StyledDocument document = fileInfo.getSummaryDocument();
+        if (document != null) {
+            resumenTextPane.setStyledDocument(document);
         }
+        
 
         resumenTextPane.setEditable(true);
         
