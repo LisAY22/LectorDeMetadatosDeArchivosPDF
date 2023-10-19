@@ -21,7 +21,6 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
 
 
 public class PDFFileMetadataReader {
@@ -663,7 +662,6 @@ public class PDFFileMetadataReader {
         infoFrame.setVisible(true);
     }
     
-    private static boolean summaryFirstTime = true;
     private static void verEditarResumenPDF(PDFFileInfo fileInfo, List<PDFFileInfo> pdfFiles) {
         // Crear una nueva ventana para editar el resumen
         JFrame summaryFrame = new JFrame("File Summary");
